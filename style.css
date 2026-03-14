@@ -701,33 +701,30 @@ body.expert-mode .card-toggle { display: none; }
 }
 
 .casos-layout {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 320px 1fr;
   gap: var(--gap-lg);
+  align-items: start;
 }
 
 .casos-triangle-wrap {
-  width: 100%;
-  max-width: 720px;
-  margin: 0 auto;
-}
-
-.casos-list {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  gap: var(--gap-sm);
-}
-
-.caso-item {
-  flex: 1 1 280px;   /* mínimo 280px, crecen para llenar */
-  max-width: 380px;
+  position: sticky;
+  top: calc(var(--nav-h) + 24px);
 }
 
 .casos-list {
   display: flex;
   flex-direction: column;
   gap: var(--gap-sm);
+  max-height: 70vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--surface-2) transparent;
+}
+
+.caso-item {
+  flex: unset;
+  max-width: unset;
 }
 
 .caso-item {
@@ -798,6 +795,7 @@ body.expert-mode .card-toggle { display: none; }
 
 .casos-triangle-wrap svg {
   width: 100%;
+  height: auto;
 }
 
 /* Puntos en el triángulo de casos */
@@ -814,9 +812,10 @@ body.expert-mode .card-toggle { display: none; }
   pointer-events: none;
 }
 
-@media (max-width: 720px) {
+@media (max-width: 820px) {
   .casos-layout { grid-template-columns: 1fr; }
-  .casos-triangle-wrap { order: -1; max-width: 320px; margin: 0 auto; }
+  .casos-triangle-wrap { position: static; order: -1; max-width: 380px; margin: 0 auto; }
+  .casos-list { max-height: none; }
 }
 
 /* ─── METODOLOGÍA ─────────────────────────────────── */

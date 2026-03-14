@@ -496,17 +496,16 @@
           <!-- Triángulo principal -->
           <polygon points="350,40 80,520 620,520"
             fill="var(--bg-triangle)" stroke="var(--border-main)" stroke-width="1.5"/>
-          <!-- Zona de estados democráticos (IAE 20–65) -->
-          <!-- Calculada con baricéntricas: IAE=20 y IAE=65 limitan el polígono interior -->
+          <!-- Zona de estados democráticos: diamante IAE 20–65, IUE ±60 -->
           <polygon id="zonaDemocratica"
-            points="350,40 228,150 207,235 189,302 471,302 453,235 432,150 350,40"
+            points="350,136 282,241.6 350,352 418,241.6"
             fill="rgba(74,144,217,0.06)" stroke="rgba(74,144,217,0.25)"
             stroke-width="1" stroke-dasharray="5 4"/>
           <!-- Etiquetas de zona -->
           <text class="zone-label" x="350" y="170" text-anchor="middle">Liberalismo</text>
           <text class="zone-label" x="350" y="390" text-anchor="middle">Intervencionismo</text>
           <text style="font-family:var(--font-body);font-size:10px;fill:rgba(74,144,217,0.6);letter-spacing:0.05em"
-            x="350" y="200" text-anchor="middle">— Zona democrática —</text>
+            x="350" y="232" text-anchor="middle">— Zona democrática —</text>
           <!-- Vértices -->
           <circle cx="350" cy="40"  r="5" fill="var(--c-anarquia)"/>
           <circle cx="80"  cy="520" r="5" fill="var(--c-comunismo)"/>

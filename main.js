@@ -592,8 +592,8 @@ function renderUserPoint() {
         // IUE muy negativo → IAEe mayor (colectivización económica, control civil menor)
         const iueNorm = state.iue / 100; // -1 a +1
         const asymmetry = iueNorm * 0.15; // ±15%
-        const iaecVal = Math.min(100, Math.round(state.iae * (1 + asymmetry + 0.05)));
-        const iaeeVal = Math.max(0,   Math.round(state.iae * (1 - asymmetry - 0.05)));
+        const iaecVal = Math.max(0, Math.min(100, Math.round(state.iae * (1 + asymmetry + 0.05))));
+        const iaeeVal = Math.max(0, Math.min(100, Math.round(state.iae * (1 - asymmetry - 0.05))));
         const { x: cx, y: cy } = indicesToXY(iaecVal, state.iue);
 
         dualDotC.setAttribute('cx', cx);
@@ -820,8 +820,8 @@ function updatePositionPanel() {
       if (formAsym) {
         const iueNorm = state.iue / 100;
         const asymmetry = iueNorm * 0.15;
-        const iaecV = Math.min(100, Math.round(state.iae * (1 + asymmetry + 0.05)));
-        const iaeeV = Math.max(0,   Math.round(state.iae * (1 - asymmetry - 0.05)));
+        const iaecV = Math.max(0, Math.min(100, Math.round(state.iae * (1 + asymmetry + 0.05))));
+        const iaeeV = Math.max(0, Math.min(100, Math.round(state.iae * (1 - asymmetry - 0.05))));
         formAsym.textContent = `IAEc≈${iaecV}, IAEe≈${iaeeV}`;
       }
 
