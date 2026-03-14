@@ -120,7 +120,31 @@ const ZONAS = [
 
 window.addEventListener("message", function(e) {
   if (e.data && e.data.type === "quiz-height") {
-    document.getElementById("quiz-frame").style.height = e.data.height + "px";
+    const frame = document.getElementById("quiz-frame");
+    if (frame) frame.style.height = e.data.height + "px";
+  }
+  // Recibir resultado del cuestionario y posicionar el triángulo
+  if (e.data && e.data.type === "quiz-result") {
+    const { iae, iue } = e.data;
+    if (typeof iae === 'number' && typeof iue === 'number') {
+      state.iae = Math.max(0,    Math.min(100, iae));
+      state.iue = Math.max(-100, Math.min(100, iue));
+      const iaeSlider = document.getElementById('iaeSlider');
+      const iueSlider = document.getElementById('iueSlider');
+      const iaeValEl  = document.getElementById('iaeVal');
+      const iueValEl  = document.getElementById('iueVal');
+      if (iaeSlider) iaeSlider.value = state.iae;
+      if (iueSlider) iueSlider.value = state.iue;
+      if (iaeValEl)  iaeValEl.textContent = state.iae;
+      if (iueValEl)  iueValEl.textContent = state.iue >= 0 ? '+' + state.iue : state.iue;
+      renderUserPoint();
+      updatePositionPanel();
+      updateContextReading();
+      updateIUEAxis();
+      // Scroll al triángulo
+      const section = document.getElementById('triangulo');
+      if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }
 });
 
@@ -283,25 +307,34 @@ function initNav() {
   window.addEventListener('scroll', onScroll, { passive: true });
 
   // Modo progresivo: público → estudiante → especialista → público
+  // El botón muestra el estado ACTUAL (no el siguiente)
   const MODES = [
-    { key: 'public',   label: 'Modo estudiante',    bodyClass: '' },
-    { key: 'student',  label: 'Modo especialista',  bodyClass: 'student-mode' },
-    { key: 'expert',   label: 'Modo público',       bodyClass: 'expert-mode' },
+    { key: 'public',   label: 'Público',       bodyClass: '',            title: 'Modo público — clic para ver más detalle' },
+    { key: 'student',  label: 'Estudiante',    bodyClass: 'student-mode', title: 'Modo estudiante — clic para ver notas técnicas' },
+    { key: 'expert',   label: 'Especialista',  bodyClass: 'expert-mode',  title: 'Modo especialista — clic para volver al modo público' },
   ];
   let modeIndex = 0;
 
-  toggle.addEventListener('click', () => {
-    // Quitar clases anteriores
+  function applyMode(idx) {
     document.body.classList.remove('student-mode', 'expert-mode');
-    modeIndex = (modeIndex + 1) % MODES.length;
-    const mode = MODES[modeIndex];
+    const mode = MODES[idx];
     if (mode.bodyClass) document.body.classList.add(mode.bodyClass);
     modeLabel.textContent = mode.label;
+    toggle.setAttribute('title', mode.title);
+    toggle.setAttribute('aria-label', mode.title);
     state.expertMode = mode.key === 'expert';
     state.studentMode = mode.key === 'student';
+
+    // Indicador de color
+    const indicator = document.getElementById('modeIndicator');
+    if (indicator) {
+      indicator.style.color = mode.key === 'expert' ? '#fff'
+                            : mode.key === 'student' ? 'var(--teal)'
+                            : 'var(--ink-4)';
+    }
+
     updateIndexCards();
     updateContextReading();
-    // Mostrar/ocultar capas en cards
     document.querySelectorAll('.card-student').forEach(el => {
       el.hidden = !state.studentMode && !state.expertMode;
     });
@@ -309,7 +342,14 @@ function initNav() {
       if (state.expertMode) el.hidden = false;
       else if (!state.studentMode) el.hidden = true;
     });
+  }
+
+  toggle.addEventListener('click', () => {
+    modeIndex = (modeIndex + 1) % MODES.length;
+    applyMode(modeIndex);
   });
+
+  applyMode(0); // estado inicial
 
   // Hamburger
   hamburger.addEventListener('click', () => {
@@ -460,7 +500,20 @@ function initTriangle() {
     const localX = e.clientX - svgRect.left;
     const localY = e.clientY - svgRect.top;
     const result = xyToIndices(localX, localY, svg);
-    if (!result) return;
+    if (!result) {
+      // Feedback visual: parpadeo del borde del triángulo
+      const poly = document.getElementById('triPolygon');
+      if (poly) {
+        poly.style.transition = 'stroke 0.15s, stroke-width 0.15s';
+        poly.style.stroke = 'var(--amber)';
+        poly.style.strokeWidth = '3';
+        setTimeout(() => {
+          poly.style.stroke = 'var(--border-main)';
+          poly.style.strokeWidth = '1.5';
+        }, 400);
+      }
+      return;
+    }
 
     state.iae = result.iae;
     state.iue = result.iue;
@@ -547,45 +600,70 @@ function renderUserPoint() {
 
   if (dualDotC && dualLine && dualGroup) {
     if (state.dualView) {
-      // Simular IAEc más alto que IAEe (como en autoritarismos de mercado)
-      // IAEc = IAE * 1.15 capped at 100; IAEe = IAE * 0.85
-      const iaecVal = Math.min(100, Math.round(state.iae * 1.18));
-      const iaeeVal = Math.max(0, Math.round(state.iae * 0.82));
-      const { x: cx, y: cy } = indicesToXY(iaecVal, state.iue);
+      // La asimetría IAEc/IAEe solo es significativa en regímenes con IAE alto.
+      // Por debajo de 40 el toggle muestra una advertencia en lugar de datos engañosos.
+      const hintEl = document.getElementById('dualViewHint');
 
-      dualDotC.setAttribute('cx', cx);
-      dualDotC.setAttribute('cy', cy);
-      if (dualLabelC) {
-        dualLabelC.setAttribute('x', cx);
-        dualLabelC.setAttribute('y', cy - 14);
-      }
-      dualGroup.setAttribute('opacity', '1');
-      dualLine.setAttribute('x1', x);
-      dualLine.setAttribute('y1', y);
-      dualLine.setAttribute('x2', cx);
-      dualLine.setAttribute('y2', cy);
-      dualLine.setAttribute('opacity', '0.7');
+      if (state.iae < 40) {
+        // Ocultar puntos extra, mostrar aviso
+        dualGroup.setAttribute('opacity', '0');
+        dualLine.setAttribute('opacity', '0');
+        const iaeeLbl = document.getElementById('dualLabelE');
+        if (iaeeLbl) iaeeLbl.setAttribute('opacity', '0');
+        if (hintEl) {
+          hintEl.textContent = 'La asimetría IAEc/IAEe es relevante cuando el IAE supera 40. Con alcance estatal bajo, ambos sub-índices convergen.';
+          hintEl.hidden = false;
+        }
+      } else {
+        if (hintEl) hintEl.hidden = true;
+        // Asimetría plausible para IAE medio-alto:
+        // IAEc tiende a crecer más rápido que IAEe en autoritarismos de mercado.
+        // Rango de asimetría: hasta ±20% según posición IUE.
+        // IUE muy positivo → IAEc mucho mayor (control civil fuerte, economía semi-libre)
+        // IUE muy negativo → IAEe mayor (colectivización económica, control civil menor)
+        const iueNorm = state.iue / 100; // -1 a +1
+        const asymmetry = iueNorm * 0.15; // ±15%
+        const iaecVal = Math.min(100, Math.round(state.iae * (1 + asymmetry + 0.05)));
+        const iaeeVal = Math.max(0,   Math.round(state.iae * (1 - asymmetry - 0.05)));
+        const { x: cx, y: cy } = indicesToXY(iaecVal, state.iue);
 
-      // Añadir etiqueta IAEe al punto principal si no existe
-      let iaeeLbl = document.getElementById('dualLabelE');
-      if (!iaeeLbl) {
-        iaeeLbl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-        iaeeLbl.setAttribute('id', 'dualLabelE');
-        iaeeLbl.setAttribute('text-anchor', 'middle');
-        iaeeLbl.setAttribute('font-family', 'DM Sans, sans-serif');
-        iaeeLbl.setAttribute('font-size', '9');
-        iaeeLbl.setAttribute('fill', 'var(--c-iaee-bg)');
-        svg.appendChild(iaeeLbl);
+        dualDotC.setAttribute('cx', cx);
+        dualDotC.setAttribute('cy', cy);
+        if (dualLabelC) {
+          dualLabelC.setAttribute('x', cx);
+          dualLabelC.setAttribute('y', cy - 14);
+          dualLabelC.textContent = `IAEc≈${iaecVal}`;
+        }
+        dualGroup.setAttribute('opacity', '1');
+        dualLine.setAttribute('x1', x);
+        dualLine.setAttribute('y1', y);
+        dualLine.setAttribute('x2', cx);
+        dualLine.setAttribute('y2', cy);
+        dualLine.setAttribute('opacity', '0.7');
+
+        // Etiqueta IAEe al punto principal
+        let iaeeLbl = document.getElementById('dualLabelE');
+        if (!iaeeLbl) {
+          iaeeLbl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          iaeeLbl.setAttribute('id', 'dualLabelE');
+          iaeeLbl.setAttribute('text-anchor', 'middle');
+          iaeeLbl.setAttribute('font-family', 'DM Sans, sans-serif');
+          iaeeLbl.setAttribute('font-size', '9');
+          iaeeLbl.setAttribute('fill', 'var(--c-iaee-bg)');
+          svg.appendChild(iaeeLbl);
+        }
+        iaeeLbl.setAttribute('x', x);
+        iaeeLbl.setAttribute('y', y - 14);
+        iaeeLbl.textContent = `IAEe≈${iaeeVal}`;
+        iaeeLbl.setAttribute('opacity', '1');
       }
-      iaeeLbl.setAttribute('x', x);
-      iaeeLbl.setAttribute('y', y - 14);
-      iaeeLbl.textContent = 'IAEe';
-      iaeeLbl.setAttribute('opacity', '1');
     } else {
       dualGroup.setAttribute('opacity', '0');
       dualLine.setAttribute('opacity', '0');
       const iaeeLbl = document.getElementById('dualLabelE');
       if (iaeeLbl) iaeeLbl.setAttribute('opacity', '0');
+      const hintEl = document.getElementById('dualViewHint');
+      if (hintEl) hintEl.hidden = true;
     }
   }
 }
@@ -809,12 +887,12 @@ function initCasos() {
   const casosSvg = document.getElementById('casosTriangle');
   if (!list || !pointsGroup) return;
 
-  // El triángulo de casos usa viewBox 500x460
+  // El triángulo de casos usa viewBox 700x600
   const TRI2 = {
-  A: { x: 350, y: 40 },
-  C: { x: 80,  y: 560 },
-  F: { x: 620, y: 560 },
-};
+    A: { x: 350, y: 40  },   // Anarquía  (arriba, centro)
+    C: { x: 80,  y: 520 },   // Comunismo (abajo-izq)
+    F: { x: 620, y: 520 },   // Fascismo  (abajo-der)
+  };
 
   function toXY2(iae, iue) {
     const iaeN = Math.max(0, Math.min(100, iae)) / 100;
@@ -948,6 +1026,7 @@ function initCasos() {
         const show = filter === 'all' || pt.dataset.filter === filter;
         pt.setAttribute('opacity', show ? '1' : '0.15');
       });
+      refreshEpistemicNote();
     });
   });
 
@@ -971,18 +1050,45 @@ function initCasos() {
       el.classList.toggle('active', el.dataset.id === id);
     });
 
-    // Nota epistémica para alta coerción
+    // Mostrar valores reales del caso en el panel de posición (si existe)
     const caso = CASOS.find(c => c.id === id);
-    const existing = document.querySelector('.epistemic-note');
-    if (existing) existing.remove();
+    if (caso) {
+      const posIAE  = document.getElementById('posIAE');
+      const posIUE  = document.getElementById('posIUE');
+      const posIUEe = document.getElementById('posIUEe');
+      const posZone = document.getElementById('posZone');
+      if (posIAE)  posIAE.textContent  = caso.iae;
+      if (posIUE)  posIUE.textContent  = caso.iue >= 0 ? '+' + caso.iue : caso.iue;
+      if (posIUEe) posIUEe.textContent = calcIUEe(caso.iae, caso.iue);
+      if (posZone) posZone.textContent = caso.zona;
+    }
+
+    // Nota epistémica
+    document.querySelectorAll('.epistemic-note').forEach(n => n.remove());
+
     if (caso && caso.highCoercion) {
       const activeItem = document.querySelector(`.caso-item[data-id="${id}"]`);
-      if (activeItem) {
+      if (activeItem && !activeItem.classList.contains('hidden')) {
         const note = document.createElement('div');
         note.className = 'epistemic-note visible';
+        note.dataset.casoId = id;
         note.innerHTML = `<strong>⚑ Nota metodológica:</strong> Este caso involucra evidencia documentada de coerción extrema. El modelo describe la <em>estructura del poder</em>, no evalúa normativamente. La descripción cuantitativa no sustituye el análisis histórico y jurídico de los hechos.`;
         activeItem.insertAdjacentElement('afterend', note);
       }
+    }
+  }
+
+  function refreshEpistemicNote() {
+    if (!state.activeCaso) return;
+    const caso = CASOS.find(c => c.id === state.activeCaso);
+    if (!caso || !caso.highCoercion) return;
+    if (document.querySelector('.epistemic-note')) return;
+    const activeItem = document.querySelector(`.caso-item[data-id="${state.activeCaso}"]`);
+    if (activeItem && !activeItem.classList.contains('hidden')) {
+      const note = document.createElement('div');
+      note.className = 'epistemic-note visible';
+      note.innerHTML = `<strong>⚑ Nota metodológica:</strong> Este caso involucra evidencia documentada de coerción extrema. El modelo describe la <em>estructura del poder</em>, no evalúa normativamente. La descripción cuantitativa no sustituye el análisis histórico y jurídico de los hechos.`;
+      activeItem.insertAdjacentElement('afterend', note);
     }
   }
 }
@@ -997,41 +1103,49 @@ function initIndexCards() {
     const student = card.querySelector('.card-student');
     if (!toggle) return;
 
+    // Estado propio de la tarjeta
+    card._expanded = false;
+
     toggle.addEventListener('click', () => {
-      // En modo público: alterna técnico
-      // En modo estudiante: alterna entre estudiante y técnico
-      if (state.expertMode) return; // en experto todo ya está visible
+      if (state.expertMode) return; // en experto todo está siempre visible
+
+      card._expanded = !card._expanded;
+
       if (state.studentMode) {
-        // Si hay técnico oculto, mostrarlo
-        if (technical) {
-          const showing = !technical.hidden;
-          technical.hidden = showing;
-          toggle.textContent = showing ? 'Ver fórmula ↓' : 'Ocultar fórmula ↑';
-        }
+        // Modo estudiante: el bloque estudiante ya está visible por CSS.
+        // El toggle muestra/oculta la fórmula técnica.
+        if (technical) technical.hidden = !card._expanded;
+        toggle.textContent = card._expanded ? 'Ocultar fórmula ↑' : 'Ver fórmula ↓';
       } else {
-        // Modo público: mostrar primero student si existe, luego técnico
-        if (student && student.hidden) {
-          student.hidden = false;
-          toggle.textContent = 'Ver fórmula ↓';
-        } else if (technical) {
-          const showing = !technical.hidden;
-          technical.hidden = showing;
-          if (student) student.hidden = showing ? true : student.hidden;
-          toggle.textContent = showing ? 'Ver más ↓' : 'Ocultar ↑';
-        }
+        // Modo público: primero aparece el bloque estudiante, luego el técnico.
+        if (student)   student.hidden   = !card._expanded;
+        if (technical) technical.hidden = true; // el técnico nunca en modo público
+        toggle.textContent = card._expanded ? 'Ocultar ↑' : 'Ver más ↓';
       }
     });
   });
 }
 
 function updateIndexCards() {
-  document.querySelectorAll('.card-toggle').forEach(btn => {
+  document.querySelectorAll('.index-card').forEach(card => {
+    const btn = card.querySelector('.card-toggle');
+    const technical = card.querySelector('.card-technical');
+    const student   = card.querySelector('.card-student');
+
+    // Resetear estado de expansión al cambiar modo
+    card._expanded = false;
+
     if (state.expertMode) {
-      btn.textContent = '';
+      if (btn) btn.textContent = '';
+      // Expert: todo visible, gestionado por CSS
     } else if (state.studentMode) {
-      btn.textContent = 'Ver fórmula ↓';
+      if (btn) btn.textContent = 'Ver fórmula ↓';
+      if (technical) technical.hidden = true;
+      // student ya visible por CSS
     } else {
-      btn.textContent = 'Ver más ↓';
+      if (btn) btn.textContent = 'Ver más ↓';
+      if (student)   student.hidden   = true;
+      if (technical) technical.hidden = true;
     }
   });
 }
@@ -1167,8 +1281,15 @@ function initHeroExplainer() {
   let currentStep = 0;
 
   function renderStep(idx) {
-    animContainer.innerHTML = steps[idx]();
-    // Actualizar textos
+    // Fade out → swap → fade in
+    animContainer.style.transition = 'opacity 0.2s ease';
+    animContainer.style.opacity = '0';
+    setTimeout(() => {
+      animContainer.innerHTML = steps[idx]();
+      animContainer.style.opacity = '1';
+    }, 200);
+
+    // Actualizar textos con animación
     document.querySelectorAll('.hero-exp-step').forEach(p => {
       p.classList.toggle('active', parseInt(p.dataset.step) === idx);
     });
