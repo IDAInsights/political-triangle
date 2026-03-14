@@ -117,37 +117,6 @@ const ZONAS = [
 ];
 
 /** Casos ilustrativos */
-
-window.addEventListener("message", function(e) {
-  if (e.data && e.data.type === "quiz-height") {
-    const frame = document.getElementById("quiz-frame");
-    if (frame) frame.style.height = e.data.height + "px";
-  }
-  // Recibir resultado del cuestionario y posicionar el triángulo
-  if (e.data && e.data.type === "quiz-result") {
-    const { iae, iue } = e.data;
-    if (typeof iae === 'number' && typeof iue === 'number') {
-      state.iae = Math.max(0,    Math.min(100, iae));
-      state.iue = Math.max(-100, Math.min(100, iue));
-      const iaeSlider = document.getElementById('iaeSlider');
-      const iueSlider = document.getElementById('iueSlider');
-      const iaeValEl  = document.getElementById('iaeVal');
-      const iueValEl  = document.getElementById('iueVal');
-      if (iaeSlider) iaeSlider.value = state.iae;
-      if (iueSlider) iueSlider.value = state.iue;
-      if (iaeValEl)  iaeValEl.textContent = state.iae;
-      if (iueValEl)  iueValEl.textContent = state.iue >= 0 ? '+' + state.iue : state.iue;
-      renderUserPoint();
-      updatePositionPanel();
-      updateContextReading();
-      updateIUEAxis();
-      // Scroll al triángulo
-      const section = document.getElementById('triangulo');
-      if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  }
-});
-
 const CASOS = [
   {
     id: 'noruega',
@@ -831,10 +800,82 @@ function updatePositionPanel() {
   const zoneEl = document.getElementById('posZone');
   if (!iaeEl) return;
 
+  const iuee = calcIUEe(state.iae, state.iue);
   iaeEl.textContent  = state.iae;
   iueEl.textContent  = state.iue >= 0 ? '+' + state.iue : state.iue;
-  iueeEl.textContent = calcIUEe(state.iae, state.iue);
+  iueeEl.textContent = iuee;
   zoneEl.textContent = calcZone(state.iae, state.iue);
+
+  // Expert panel: fórmulas, sensibilidad, confianza
+  const expertPanel = document.getElementById('posExpertPanel');
+  if (expertPanel) {
+    expertPanel.hidden = !state.expertMode;
+    if (state.expertMode) {
+      // Fórmulas vivas
+      const formIUEe = document.getElementById('posFormIUEe');
+      if (formIUEe) formIUEe.textContent = `(${state.iue}/100) × ${state.iae} = ${iuee}`;
+
+      // Asimetría IAEc/IAEe estimada
+      const formAsym = document.getElementById('posFormAsym');
+      if (formAsym) {
+        const iueNorm = state.iue / 100;
+        const asymmetry = iueNorm * 0.15;
+        const iaecV = Math.min(100, Math.round(state.iae * (1 + asymmetry + 0.05)));
+        const iaeeV = Math.max(0,   Math.round(state.iae * (1 - asymmetry - 0.05)));
+        formAsym.textContent = `IAEc≈${iaecV}, IAEe≈${iaeeV}`;
+      }
+
+      // Sensibilidad ±5 IAE
+      const zoneMinus = document.getElementById('posSensZoneMinus');
+      const zonePlus  = document.getElementById('posSensZonePlus');
+      const zoneSens  = document.getElementById('posZoneSens');
+      if (zoneMinus) zoneMinus.textContent = calcZone(Math.max(0, state.iae - 5), state.iue);
+      if (zonePlus)  zonePlus.textContent  = calcZone(Math.min(100, state.iae + 5), state.iue);
+      if (zoneSens)  zoneSens.textContent  = calcZone(state.iae, state.iue);
+
+      // Confianza metodológica
+      const confBar  = document.getElementById('posConfBar');
+      const confText = document.getElementById('posConfText');
+      let confPct, confLabel, confColor;
+      if (state.iae < 10 || state.iae > 90 || Math.abs(state.iue) > 90) {
+        confPct = 40; confLabel = 'Baja — zona extrema, pocos casos históricos'; confColor = 'var(--amber)';
+      } else if (state.iae < 25 || state.iae > 75 || Math.abs(state.iue) > 70) {
+        confPct = 65; confLabel = 'Media — zona con casos limitados'; confColor = 'var(--teal)';
+      } else {
+        confPct = 90; confLabel = 'Alta — zona con abundante evidencia comparada'; confColor = 'var(--teal)';
+      }
+      if (confBar)  { confBar.style.width = confPct + '%'; confBar.style.background = confColor; }
+      if (confText) confText.textContent = confLabel;
+    }
+  }
+
+  // ARIA: actualizar aria-valuetext de los sliders
+  const iaeSlider = document.getElementById('iaeSlider');
+  const iueSlider = document.getElementById('iueSlider');
+  if (iaeSlider) {
+    iaeSlider.setAttribute('aria-valuenow', state.iae);
+    iaeSlider.setAttribute('aria-valuetext', `IAE ${state.iae} — ${calcIAELabel(state.iae)}`);
+  }
+  if (iueSlider) {
+    iueSlider.setAttribute('aria-valuenow', state.iue);
+    iueSlider.setAttribute('aria-valuetext', `IUE ${state.iue} — ${calcIUELabel(state.iue)}`);
+  }
+}
+
+function calcIAELabel(iae) {
+  if (iae < 12) return 'Estado mínimo o colapso';
+  if (iae < 40) return 'alcance limitado';
+  if (iae < 65) return 'alcance moderado';
+  if (iae < 80) return 'alcance alto';
+  return 'alcance máximo';
+}
+
+function calcIUELabel(iue) {
+  if (iue < -60) return 'muy universalista-progresista';
+  if (iue < -20) return 'universalista';
+  if (iue < 20)  return 'centro pragmático';
+  if (iue < 60)  return 'particularista';
+  return 'muy particularista-conservador';
 }
 
 /* ══════════════════════════════════════════════════
@@ -927,7 +968,14 @@ function initCasos() {
         <span class="caso-pill">IUE=${caso.iue >= 0 ? '+' : ''}${caso.iue}</span>
       </div>
     `;
-    item.addEventListener('click', () => activateCaso(caso.id));
+    item.addEventListener('click', () => {
+      if (state.activeCaso === caso.id) {
+        // Segundo clic: añadir a comparación
+        addToCompare(caso.id);
+      } else {
+        activateCaso(caso.id);
+      }
+    });
     list.appendChild(item);
   });
 
@@ -1328,8 +1376,388 @@ function initHeroExplainer() {
 }
 
 /* ══════════════════════════════════════════════════
-   12. INIT
+   12. QUIZ NATIVO INTEGRADO
 ══════════════════════════════════════════════════ */
+
+const QUIZ_QUESTIONS = [
+  { text: "El Estado debería garantizar educación gratuita y de calidad para toda la población.", axis: "IAE", dir: 1 },
+  { text: "Las empresas estratégicas (energía, agua, transporte) deberían estar en manos del Estado.", axis: "IAE", dir: 1 },
+  { text: "El Estado tiene derecho a limitar la libre circulación de personas en situaciones de emergencia.", axis: "IAE", dir: 1 },
+  { text: "El Estado debería regular el acceso a las redes sociales y los medios de comunicación.", axis: "IAE", dir: 1 },
+  { text: "El Estado debería redistribuir activamente la riqueza a través de impuestos progresivos.", axis: "IUE", dir: -1 },
+  { text: "Las leyes deberían reflejar los valores y tradiciones culturales de la mayoría.", axis: "IUE", dir: 1 },
+  { text: "El Estado debería financiar y promover activamente la igualdad de género y derechos LGBTQ+.", axis: "IUE", dir: -1 },
+  { text: "La inmigración debería limitarse para preservar la identidad cultural nacional.", axis: "IUE", dir: 1 },
+  { text: "El Estado debería proveer un seguro de desempleo universal y generoso.", axis: "IAE", dir: 1 },
+  { text: "Las instituciones religiosas deberían tener influencia en las decisiones del Estado.", axis: "IUE", dir: 1 },
+  { text: "La propiedad privada es un derecho fundamental que el Estado no debe restringir.", axis: "IAE", dir: -1 },
+  { text: "El Estado debería garantizar un salario mínimo que permita vivir dignamente.", axis: "IUE", dir: -1 },
+  { text: "Las fuerzas de seguridad necesitan más recursos y autonomía para combatir el crimen.", axis: "IAE", dir: 1 },
+  { text: "El Estado debería subsidiar las artes, la cultura y los medios públicos.", axis: "IUE", dir: -1 },
+  { text: "El aborto debería estar prohibido o fuertemente restringido por ley.", axis: "IUE", dir: 1 },
+  { text: "La libre competencia del mercado es el mejor mecanismo para asignar recursos.", axis: "IAE", dir: -1 },
+  { text: "El Estado debería tener un sistema de salud pública universal.", axis: "IAE", dir: 1 },
+  { text: "La tradición y los valores familiares deben ser protegidos activamente por el Estado.", axis: "IUE", dir: 1 },
+  { text: "El Estado debería reducir las desigualdades regionales mediante transferencias y subsidios.", axis: "IUE", dir: -1 },
+  { text: "Los ciudadanos deberían poder armarse para su propia defensa sin necesidad de permiso estatal.", axis: "IAE", dir: -1 },
+];
+
+const QUIZ_LABELS = [
+  "Totalmente en desacuerdo",
+  "En desacuerdo",
+  "Neutro / No sé",
+  "De acuerdo",
+  "Totalmente de acuerdo"
+];
+
+const QUIZ_REGIMES = [
+  [55,-40,"Noruega","#1B5C9E"],[40,20,"EE.UU. 2000s","#2874A6"],
+  [80,-15,"China actual","#C0392B"],[72,-65,"Venezuela 2010s","#E07B20"],
+  [75,80,"Irán actual","#8B1A1A"],[8,0,"Somalia 1990s","#888"],
+  [62,-55,"Suecia 1980s","#0F6E5A"],[88,85,"Alemania Nazi","#4A1A1A"],
+  [48,-25,"Francia actual","#1A5276"],[42,-10,"Alemania 2024","#1A5276"],
+];
+
+const quizState = {
+  step: 0,
+  answers: Array(QUIZ_QUESTIONS.length).fill(null),
+  phase: 'quiz',
+};
+
+const QUIZ_TRI = {
+  A: { x: 130, y: 14 },
+  C: { x: 12,  y: 244 },
+  F: { x: 248, y: 244 },
+};
+
+function quizToXY(iae, iue) {
+  const iaeN = Math.max(0, Math.min(100, iae)) / 100;
+  const iueN = (Math.max(-100, Math.min(100, iue)) + 100) / 200;
+  const wA = 1 - iaeN, wC = iaeN * (1 - iueN), wF = iaeN * iueN;
+  return {
+    x: wA * QUIZ_TRI.A.x + wC * QUIZ_TRI.C.x + wF * QUIZ_TRI.F.x,
+    y: wA * QUIZ_TRI.A.y + wC * QUIZ_TRI.C.y + wF * QUIZ_TRI.F.y,
+  };
+}
+
+function quizCalcScores() {
+  let iaeSum = 0, iaeN = 0, iueSum = 0, iueN = 0;
+  QUIZ_QUESTIONS.forEach((q, i) => {
+    if (quizState.answers[i] === null) return;
+    const norm = quizState.answers[i] - 3;
+    const score = norm * q.dir * 25;
+    if (q.axis === "IAE") { iaeSum += score; iaeN++; }
+    else                  { iueSum += score; iueN++; }
+  });
+  const iae  = Math.max(0,    Math.min(100, Math.round(50 + (iaeN ? iaeSum / iaeN : 0))));
+  const iue  = Math.max(-100, Math.min(100, Math.round(iueN ? iueSum / iueN * 2 : 0)));
+  const iuee = Math.round((iue / 100) * iae);
+  return { iae, iue, iuee };
+}
+
+function quizGetZone(iae, iue) {
+  const iuee = (iue/100)*iae;
+  if (iae < 20) return { name:"Zona semi-libertaria", desc:"Alcance estatal muy reducido. Predomina la autonomía individual." };
+  if (iae > 80 && iue < -50) return { name:"Polo comunista", desc:"Estado de alcance máximo orientado a homogeneizar la vida económica." };
+  if (iae > 80 && iue > 50)  return { name:"Polo fascista / teocrático", desc:"Estado de alcance máximo orientado a imponer una identidad dominante." };
+  if (iae > 60 && Math.abs(iue) < 30) return { name:"Autocracia pragmática", desc:"Alto alcance estatal sin proyecto ideológico fuerte." };
+  if (iae > 55 && iue > 20)  return { name:"Autoritarismo electoral", desc:"Instituciones formales con erosión de libertades civiles." };
+  if (iae > 55 && iue < -20) return { name:"Intervencionismo de izquierda", desc:"Estado de alcance alto con orientación redistributiva." };
+  if (iae > 35 && iae < 65 && Math.abs(iuee) < 20) return { name:"Zona democrática", desc:"Coexistencia de proyectos políticos distintos con poder distribuido." };
+  if (iae > 35 && iae < 65 && iue > 15) return { name:"Derecha democrática", desc:"Estado moderado con orientación conservadora-particularista." };
+  if (iae > 35 && iae < 65 && iue < -15) return { name:"Izquierda democrática", desc:"Estado moderado con orientación universalista-igualitarista." };
+  if (iae <= 35 && iue > 15) return { name:"Liberalismo conservador", desc:"Estado pequeño con orientación cultural particularista." };
+  if (iae <= 35 && iue < -15) return { name:"Liberalismo progresista", desc:"Estado pequeño con orientación universalista." };
+  return { name:"Zona central", desc:"Posición central: alcance moderado y orientación pragmática." };
+}
+
+function quizNearest(iae, iue, n = 3) {
+  return QUIZ_REGIMES
+    .map(([ri, ru, name, color]) => ({ name, color, d: Math.round(Math.sqrt((iae-ri)**2 + ((iue-ru)*0.7)**2)) }))
+    .sort((a, b) => a.d - b.d).slice(0, n);
+}
+
+function quizUpdateLiveTriangle() {
+  const answeredCount = quizState.answers.filter(a => a !== null).length;
+  if (answeredCount === 0) return;
+
+  const { iae, iue } = quizCalcScores();
+  const { x, y } = quizToXY(iae, iue);
+
+  const dot   = document.getElementById('quizDot');
+  const pulse = document.getElementById('quizDotPulse');
+  if (dot)   { dot.setAttribute('cx', x.toFixed(1)); dot.setAttribute('cy', y.toFixed(1)); dot.setAttribute('opacity', '1'); }
+  if (pulse) { pulse.setAttribute('cx', x.toFixed(1)); pulse.setAttribute('cy', y.toFixed(1)); pulse.setAttribute('opacity', '0.5'); }
+
+  const liveIAE = document.getElementById('quizLiveIAE');
+  const liveIUE = document.getElementById('quizLiveIUE');
+  if (liveIAE) liveIAE.textContent = iae;
+  if (liveIUE) liveIUE.textContent = (iue >= 0 ? '+' : '') + iue;
+
+  const pct = Math.round((answeredCount / QUIZ_QUESTIONS.length) * 100);
+  const bar = document.getElementById('quizProgressBar');
+  const lbl = document.getElementById('quizProgressLabel');
+  if (bar) bar.style.width = pct + '%';
+  if (lbl) lbl.textContent = `${answeredCount} / ${QUIZ_QUESTIONS.length}`;
+}
+
+function quizRenderQuiz() {
+  const q = QUIZ_QUESTIONS[quizState.step];
+  const ans = quizState.answers[quizState.step];
+  const hasAns = ans !== null;
+  const pct = Math.round((quizState.step / QUIZ_QUESTIONS.length) * 100);
+
+  return `
+    <div class="quiz-progress-track"><div class="quiz-progress-fill" style="width:${pct}%"></div></div>
+    <div class="quiz-q-meta">
+      <span class="quiz-counter">Pregunta ${quizState.step + 1} de ${QUIZ_QUESTIONS.length}</span>
+      <span class="quiz-badge quiz-badge-${q.axis.toLowerCase()}">${q.axis}</span>
+    </div>
+    <p class="quiz-q-text">${q.text}</p>
+    <div class="quiz-options">
+      ${QUIZ_LABELS.map((l, i) => {
+        const v = i + 1;
+        return `<div class="quiz-option${ans === v ? ' selected' : ''}" role="radio" aria-checked="${ans === v}" tabindex="0" onclick="quizPick(${v})" onkeydown="if(event.key==='Enter'||event.key===' ')quizPick(${v})">
+          <div class="quiz-radio"><div class="quiz-radio-dot"></div></div>
+          <span class="quiz-option-label">${l}</span>
+        </div>`;
+      }).join('')}
+    </div>
+    <div class="quiz-nav">
+      ${quizState.step > 0 ? `<button class="quiz-btn" onclick="quizPrev()">← Anterior</button>` : ''}
+      <button class="quiz-btn${hasAns ? ' primary' : ''}" onclick="quizNext()" ${hasAns ? '' : 'disabled'}>
+        ${quizState.step === QUIZ_QUESTIONS.length - 1 ? 'Ver resultado →' : 'Siguiente →'}
+      </button>
+    </div>`;
+}
+
+function quizRenderResult() {
+  const { iae, iue, iuee } = quizCalcScores();
+  const zone = quizGetZone(iae, iue);
+  const near = quizNearest(iae, iue);
+  const iueLbl = iue < -60 ? "Muy universalista" : iue < -20 ? "Universalista" : iue < 20 ? "Centro pragmático" : iue < 60 ? "Particularista" : "Muy particularista";
+  const iaeLbl = iae < 20 ? "Muy reducido" : iae < 40 ? "Limitado" : iae < 60 ? "Moderado" : iae < 80 ? "Alto" : "Máximo";
+
+  return `
+    <div class="quiz-result">
+      <div class="quiz-result-title">Tu posición en el triángulo</div>
+      <div class="quiz-result-sub">Basada en ${QUIZ_QUESTIONS.length} respuestas. Aproximación orientativa.</div>
+      <div class="quiz-scores">
+        <div class="quiz-score-card">
+          <div class="quiz-score-label">IAE — Alcance</div>
+          <div class="quiz-score-val c-blue">${iae}</div>
+          <div class="quiz-score-desc">${iaeLbl}</div>
+        </div>
+        <div class="quiz-score-card">
+          <div class="quiz-score-label">IUE — Orientación</div>
+          <div class="quiz-score-val c-amber">${iue > 0 ? '+' : ''}${iue}</div>
+          <div class="quiz-score-desc">${iueLbl}</div>
+        </div>
+        <div class="quiz-score-card">
+          <div class="quiz-score-label">IUEe — Imposición</div>
+          <div class="quiz-score-val c-teal">${iuee > 0 ? '+' : ''}${iuee}</div>
+          <div class="quiz-score-desc">IUE × IAE / 100</div>
+        </div>
+      </div>
+      <div class="quiz-zone-card">
+        <div class="quiz-zone-tag">Zona identificada</div>
+        <div class="quiz-zone-name">${zone.name}</div>
+        <div class="quiz-zone-desc">${zone.desc}</div>
+      </div>
+      <div class="quiz-comp-title">Regímenes más cercanos:</div>
+      <div class="quiz-comp-list">
+        ${near.map(c => `<div class="quiz-comp-item">
+          <div class="quiz-comp-dot" style="background:${c.color}"></div>
+          <div class="quiz-comp-name">${c.name}</div>
+          <div class="quiz-comp-dist">~${c.d} pts</div>
+        </div>`).join('')}
+      </div>
+      <div class="quiz-note">
+        <strong>Nota:</strong> Este cuestionario es orientativo y no reemplaza el cálculo riguroso del modelo,
+        que usa fuentes verificables (Freedom House, Fraser Institute, FMI). Un mismo resultado puede
+        corresponder a regímenes muy distintos en sus consecuencias humanas.
+      </div>
+      <div class="quiz-result-actions">
+        <button class="quiz-btn primary" onclick="quizGoToTriangle()">Ver en el triángulo →</button>
+        <button class="quiz-btn" onclick="quizRestart()">Reiniciar</button>
+      </div>
+    </div>`;
+}
+
+function quizRender() {
+  const panel = document.getElementById('quizPanel');
+  if (!panel) return;
+  panel.innerHTML = quizState.phase === 'quiz' ? quizRenderQuiz() : quizRenderResult();
+  quizUpdateLiveTriangle();
+}
+
+window.quizPick = function(v) {
+  quizState.answers[quizState.step] = v;
+  quizRender();
+  if (quizState.step < QUIZ_QUESTIONS.length - 1) {
+    setTimeout(() => { quizState.step++; quizRender(); }, 280);
+  }
+};
+
+window.quizNext = function() {
+  if (quizState.answers[quizState.step] === null) return;
+  if (quizState.step === QUIZ_QUESTIONS.length - 1) { quizState.phase = 'result'; }
+  else { quizState.step++; }
+  quizRender();
+};
+
+window.quizPrev = function() {
+  if (quizState.step > 0) { quizState.step--; quizRender(); }
+};
+
+window.quizGoToTriangle = function() {
+  const { iae, iue } = quizCalcScores();
+  state.iae = iae;
+  state.iue = iue;
+  const iaeSlider = document.getElementById('iaeSlider');
+  const iueSlider = document.getElementById('iueSlider');
+  const iaeValEl  = document.getElementById('iaeVal');
+  const iueValEl  = document.getElementById('iueVal');
+  if (iaeSlider) iaeSlider.value = state.iae;
+  if (iueSlider) iueSlider.value = state.iue;
+  if (iaeValEl)  iaeValEl.textContent = state.iae;
+  if (iueValEl)  iueValEl.textContent = state.iue >= 0 ? '+' + state.iue : state.iue;
+  renderUserPoint();
+  updatePositionPanel();
+  updateContextReading();
+  updateIUEAxis();
+  const section = document.getElementById('triangulo');
+  if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
+
+window.quizRestart = function() {
+  quizState.step = 0;
+  quizState.answers = Array(QUIZ_QUESTIONS.length).fill(null);
+  quizState.phase = 'quiz';
+  quizRender();
+};
+
+function initQuiz() {
+  quizRender();
+}
+
+/* ══════════════════════════════════════════════════
+   13. COMPARACIÓN DE CASOS
+══════════════════════════════════════════════════ */
+const compareState = { slots: [null, null] };
+
+function initCasosCompare() {
+  // Permitir doble clic para comparar (clic simple = activar, doble clic = agregar a comparación)
+  // En la práctica, usaremos un long press / segundo clic para simplificar UX
+  // Los botones de limpiar comparación
+  document.querySelectorAll('.compare-slot-clear').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const slot = parseInt(btn.dataset.slot) - 1;
+      compareState.slots[slot] = null;
+      renderCompare();
+    });
+  });
+}
+
+function addToCompare(casoId) {
+  const caso = CASOS.find(c => c.id === casoId);
+  if (!caso) return;
+
+  // Si ya está en algún slot, quítalo
+  const existing = compareState.slots.indexOf(casoId);
+  if (existing !== -1) {
+    compareState.slots[existing] = null;
+  } else {
+    // Llenar el primer slot vacío
+    const empty = compareState.slots.indexOf(null);
+    if (empty !== -1) {
+      compareState.slots[empty] = casoId;
+    } else {
+      // Reemplazar slot 0
+      compareState.slots[0] = casoId;
+    }
+  }
+  renderCompare();
+}
+
+function renderCompare() {
+  const bar  = document.getElementById('casosCompareBar');
+  const hint = document.getElementById('casosCompareHint');
+  const slot1Name = document.getElementById('compareSlot1Name');
+  const slot2Name = document.getElementById('compareSlot2Name');
+  const result    = document.getElementById('compareResult');
+
+  const [id1, id2] = compareState.slots;
+  const caso1 = id1 ? CASOS.find(c => c.id === id1) : null;
+  const caso2 = id2 ? CASOS.find(c => c.id === id2) : null;
+
+  // Actualizar visual de las tarjetas de casos
+  document.querySelectorAll('.caso-item').forEach(el => {
+    el.classList.toggle('compare-selected', compareState.slots.includes(el.dataset.id));
+  });
+
+  if (slot1Name) slot1Name.textContent = caso1 ? caso1.label : '—';
+  if (slot2Name) slot2Name.textContent = caso2 ? caso2.label : '—';
+
+  const hasAny = id1 || id2;
+  if (bar)  bar.hidden  = !hasAny;
+  if (hint) hint.hidden = hasAny;
+
+  if (caso1 && caso2 && result) {
+    const dIAE = caso2.iae - caso1.iae;
+    const dIUE = caso2.iue - caso1.iue;
+    const dIUEe = parseFloat(calcIUEe(caso2.iae, caso2.iue)) - parseFloat(calcIUEe(caso1.iae, caso1.iue));
+    const dirIAE = dIAE > 0 ? 'mayor alcance estatal' : dIAE < 0 ? 'menor alcance estatal' : 'mismo alcance estatal';
+    const dirIUE = dIUE > 0 ? 'más particularista' : dIUE < 0 ? 'más universalista' : 'misma orientación';
+
+    result.innerHTML = `
+      <strong>${caso2.label}</strong> tiene
+      <span class="compare-delta-iae">${dIAE > 0 ? '+' : ''}${dIAE} puntos de IAE</span>
+      (${dirIAE}) y
+      <span class="compare-delta-iue">${dIUE > 0 ? '+' : ''}${dIUE} puntos de IUE</span>
+      (${dirIUE}) respecto a <strong>${caso1.label}</strong>.
+      El uso estatal efectivo (IUEe) difiere en ${dIUEe > 0 ? '+' : ''}${dIUEe.toFixed(1)} puntos.
+      ${(caso1.zona !== caso2.zona) ? `Se ubican en zonas distintas: <em>${caso1.zona}</em> vs <em>${caso2.zona}</em>.` : `Ambos se ubican en la zona: <em>${caso1.zona}</em>.`}
+    `;
+  } else if (result) {
+    result.innerHTML = '';
+  }
+}
+
+/* ══════════════════════════════════════════════════
+   14. CODEBOOK EXPANDIBLE
+══════════════════════════════════════════════════ */
+function initCodebookExpand() {
+  const btn = document.getElementById('codebookExpandBtn');
+  const box = document.getElementById('codebookInline');
+  if (!btn || !box) return;
+
+  btn.addEventListener('click', () => {
+    const expanded = btn.getAttribute('aria-expanded') === 'true';
+    btn.setAttribute('aria-expanded', !expanded);
+    box.hidden = expanded;
+    btn.textContent = expanded ? 'Ver puntos clave del Codebook ↓' : 'Ocultar Codebook ↑';
+  });
+}
+
+/* ══════════════════════════════════════════════════
+   15. HINT DE PRIMER CLIC EN TRIÁNGULO
+══════════════════════════════════════════════════ */
+function initTriangleHint() {
+  const hint = document.getElementById('triClickHint');
+  if (!hint) return;
+  hint.classList.add('visible');
+  // Ocultar al primer clic en el triángulo
+  const svg = document.getElementById('mainTriangle');
+  if (svg) {
+    svg.addEventListener('click', () => {
+      hint.style.display = 'none';
+    }, { once: true });
+  }
+}
+
+
 function init() {
   // Añadir clases reveal a elementos
   document.querySelectorAll('.index-card, .met-block').forEach(el => {
@@ -1345,6 +1773,10 @@ function init() {
   updateIUEAxis();
   initIndexCards();
   initCasos();
+  initQuiz();
+  initCasosCompare();
+  initCodebookExpand();
+  initTriangleHint();
   initScrollReveal();
 
   // Héroe: animaciones de entrada

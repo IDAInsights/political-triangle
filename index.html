@@ -86,13 +86,17 @@
     <div class="triangle-controls">
       <div class="control-group">
         <label for="iaeSlider">Alcance estatal (IAE)</label>
-        <input type="range" id="iaeSlider" min="0" max="100" value="50" step="1" />
-        <span class="control-val" id="iaeVal">50</span>
+        <input type="range" id="iaeSlider" min="0" max="100" value="50" step="1"
+          aria-valuemin="0" aria-valuemax="100" aria-valuenow="50"
+          aria-valuetext="IAE 50 — alcance moderado" />
+        <span class="control-val" id="iaeVal" aria-hidden="true">50</span>
       </div>
       <div class="control-group">
         <label for="iueSlider">Uso del Estado (IUE)</label>
-        <input type="range" id="iueSlider" min="-100" max="100" value="0" step="1" />
-        <span class="control-val" id="iueVal">0</span>
+        <input type="range" id="iueSlider" min="-100" max="100" value="0" step="1"
+          aria-valuemin="-100" aria-valuemax="100" aria-valuenow="0"
+          aria-valuetext="IUE 0 — centro pragmático" />
+        <span class="control-val" id="iueVal" aria-hidden="true">0</span>
       </div>
     </div>
 
@@ -226,7 +230,7 @@
     </div>
 
     <!-- Panel de posición calculada -->
-    <div class="position-panel" id="positionPanel">
+    <div class="position-panel" id="positionPanel" aria-live="polite" aria-label="Posición calculada en el triángulo">
       <div class="pos-item">
         <span class="pos-label">IAE</span>
         <span class="pos-value" id="posIAE">—</span>
@@ -247,6 +251,34 @@
         <span class="pos-value pos-zone" id="posZone">—</span>
         <span class="pos-desc">Clasificación</span>
       </div>
+      <!-- Modo especialista: fórmulas y sensibilidad -->
+      <div class="pos-expert-panel expert-only" id="posExpertPanel" hidden>
+        <div class="pos-expert-title">Modo especialista</div>
+        <div class="pos-formulas">
+          <code>IUEe = (IUE / 100) × IAE = <span id="posFormIUEe">—</span></code>
+          <code>Asimetría IAEc/IAEe: <span id="posFormAsym">—</span></code>
+        </div>
+        <div class="pos-sensitivity">
+          <span class="pos-sens-label">Sensibilidad ±5 IAE</span>
+          <div class="pos-sens-row">
+            <span class="pos-sens-minus" id="posSensZoneMinus">—</span>
+            <span class="pos-sens-center">→ <strong id="posZoneSens">—</strong> →</span>
+            <span class="pos-sens-plus" id="posSensZonePlus">—</span>
+          </div>
+        </div>
+        <div class="pos-confidence">
+          <span class="pos-conf-label">Confianza metodológica</span>
+          <div class="pos-conf-bar-wrap">
+            <div class="pos-conf-bar" id="posConfBar"></div>
+          </div>
+          <span class="pos-conf-text" id="posConfText">—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hint de primer uso: clic en el triángulo -->
+    <div class="triangle-click-hint" id="triClickHint" aria-hidden="true">
+      <span>↑ Hacé clic en el triángulo para posicionar</span>
     </div>
   </section>
 
@@ -429,6 +461,25 @@
       </label>
     </div>
 
+    <!-- Panel de comparación directa -->
+    <div class="casos-compare-bar" id="casosCompareBar" hidden>
+      <div class="compare-slots">
+        <div class="compare-slot" id="compareSlot1">
+          <span class="compare-slot-label">Caso A</span>
+          <span class="compare-slot-name" id="compareSlot1Name">—</span>
+          <button class="compare-slot-clear" data-slot="1" aria-label="Quitar caso A">✕</button>
+        </div>
+        <div class="compare-vs">vs</div>
+        <div class="compare-slot" id="compareSlot2">
+          <span class="compare-slot-label">Caso B</span>
+          <span class="compare-slot-name" id="compareSlot2Name">—</span>
+          <button class="compare-slot-clear" data-slot="2" aria-label="Quitar caso B">✕</button>
+        </div>
+      </div>
+      <div class="compare-result" id="compareResult" aria-live="polite"></div>
+    </div>
+    <p class="casos-compare-hint" id="casosCompareHint">Seleccioná dos casos para comparar sus posiciones</p>
+
     <div class="casos-layout">
       <div class="casos-list" id="casosList">
         <!-- Generado por JS -->
@@ -476,20 +527,48 @@
       <h2>¿Dónde te ubicás?</h2>
       <p class="section-desc">
         Respondé 20 preguntas para obtener tu posición en el triángulo
-        según los índices IAE e IUE del modelo. Al terminar podés ver
-        tu resultado en el triángulo interactivo.
+        según los índices IAE e IUE del modelo. El mapa se actualiza
+        en tiempo real mientras respondés.
       </p>
     </div>
-    <iframe
-      id="quiz-frame"
-      src="cuestionario.html"
-      title="Cuestionario de posición política — El Triángulo Político"
-      width="100%"
-      height="700"
-      frameborder="0"
-      scrolling="no"
-      style="display:block; border:none; border-radius:16px; overflow:hidden;"
-    ></iframe>
+
+    <div class="quiz-layout" id="quizLayout">
+
+      <!-- Panel izquierdo: preguntas -->
+      <div class="quiz-panel" id="quizPanel" aria-live="polite" aria-atomic="false">
+        <!-- Renderizado por JS -->
+      </div>
+
+      <!-- Panel derecho: triángulo en tiempo real -->
+      <div class="quiz-triangle-wrap">
+        <p class="quiz-tri-label">Tu posición mientras respondés</p>
+        <svg id="quizTriangle" viewBox="0 0 260 260" xmlns="http://www.w3.org/2000/svg"
+             role="img" aria-label="Triángulo político con tu posición actual">
+          <!-- Triángulo base -->
+          <polygon points="130,14 12,244 248,244"
+            fill="var(--bg-triangle)" stroke="var(--border-main)" stroke-width="1"/>
+          <!-- Etiquetas vértices -->
+          <text x="130" y="10" text-anchor="middle" class="quiz-tri-vertex">Anarquía</text>
+          <text x="4"   y="255" text-anchor="start" class="quiz-tri-vertex">Comunismo</text>
+          <text x="256" y="255" text-anchor="end"   class="quiz-tri-vertex">Fascismo</text>
+          <!-- Punto de usuario (actualizado en tiempo real) -->
+          <circle id="quizDotPulse" cx="130" cy="130" r="14"
+            fill="none" stroke="var(--c-user)" stroke-width="1" opacity="0"/>
+          <circle id="quizDot" cx="130" cy="130" r="7"
+            fill="var(--c-user)" stroke="white" stroke-width="1.5" opacity="0"/>
+        </svg>
+        <!-- Índices en tiempo real -->
+        <div class="quiz-live-indices" id="quizLiveIndices" aria-live="polite">
+          <div class="quiz-live-pill quiz-live-iae">IAE <span id="quizLiveIAE">—</span></div>
+          <div class="quiz-live-pill quiz-live-iue">IUE <span id="quizLiveIUE">—</span></div>
+          <div class="quiz-live-progress">
+            <div id="quizProgressBar" class="quiz-live-bar" style="width:0%"></div>
+          </div>
+          <span id="quizProgressLabel" class="quiz-live-pct">0 / 20</span>
+        </div>
+      </div>
+
+    </div>
   </section>
   <!-- ═══════════════════════════════ METODOLOGÍA ══════════════════════════════ -->
   <section id="metodologia" class="section section-alt">
@@ -558,7 +637,36 @@
         <h3>Codebook V3.2</h3>
         <p>Documentación técnica completa del modelo, incluyendo tablas de calibración,
         fórmulas, casos de validación retrospectiva y apéndice de componentes experimentales.</p>
-        <a href="#" class="btn btn-outline" id="downloadCodebook">Descargar Codebook (próximamente)</a>
+        <button class="btn btn-outline codebook-expand-btn" id="codebookExpandBtn" aria-expanded="false">
+          Ver puntos clave del Codebook ↓
+        </button>
+        <div class="codebook-inline" id="codebookInline" hidden>
+          <div class="codebook-item">
+            <span class="codebook-item-label">Ponderación IAE</span>
+            <code>IAE = (IAEc × 0.50) + (IAEe × 0.50)</code>
+            <p>Test de sensibilidad con 60/40 y 40/60 produjo variación &lt; 4 puntos en todos los casos de validación.</p>
+          </div>
+          <div class="codebook-item">
+            <span class="codebook-item-label">Corrector FTE (Fragmentación Territorial)</span>
+            <code>IAEc_ef = IAEc_formal × (1 − FTE)</code>
+            <p>FTE máximo aplicable: 0.80. El ecosistema informacional pesa 30% del IAEc.</p>
+          </div>
+          <div class="codebook-item">
+            <span class="codebook-item-label">Corrector de Captura por Élites</span>
+            <code>IAEe_ef = IAEe_formal × (1 − CE × 0.30)</code>
+            <p>CE reduce el IAEe hasta 30%. Hiperinflación sostenida aplica corrector adicional de hasta 15%.</p>
+          </div>
+          <div class="codebook-item">
+            <span class="codebook-item-label">Índice de Vector Resultante</span>
+            <code>IVR = Velocidad × (1 + IC1/100) × (1 − II1/100)</code>
+            <p>IC1 (liderazgo personal) acelera la trayectoria. II1 (legitimidad institucional) la frena. IC2 (crisis/bonanza) puede invertir la dirección.</p>
+          </div>
+          <div class="codebook-item">
+            <span class="codebook-item-label">Zona democrática</span>
+            <p>IAE entre 20 y 65 con pluralismo político real verificado. El umbral de 65 está calibrado sobre 47 casos históricos con alternancia documentada.</p>
+          </div>
+          <p class="codebook-note">La documentación completa (incluyendo tablas de calibración y apéndice experimental) estará disponible próximamente.</p>
+        </div>
       </div>
 
     </div>
