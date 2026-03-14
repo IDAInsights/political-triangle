@@ -804,10 +804,10 @@ function initCasos() {
 
   // El triángulo de casos usa viewBox 500x460
   const TRI2 = {
-    A: { x: 250, y: 30 },
-    C: { x: 60,  y: 430 },
-    F: { x: 440, y: 430 },
-  };
+  A: { x: 350, y: 40 },
+  C: { x: 80,  y: 560 },
+  F: { x: 620, y: 560 },
+};
 
   function toXY2(iae, iue) {
     const iaeN = Math.max(0, Math.min(100, iae)) / 100;
