@@ -117,6 +117,13 @@ const ZONAS = [
 ];
 
 /** Casos ilustrativos */
+
+window.addEventListener("message", function(e) {
+  if (e.data && e.data.type === "quiz-height") {
+    document.getElementById("quiz-frame").style.height = e.data.height + "px";
+  }
+});
+
 const CASOS = [
   {
     id: 'noruega',
