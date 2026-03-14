@@ -22,7 +22,7 @@
       <a href="#metodologia">Metodología</a>
     </div>
     <button class="nav-toggle" id="modeToggle" aria-label="Cambiar modo">
-      <span id="modeLabel">Modo especialista</span>
+      <span id="modeLabel">Modo estudiante</span>
     </button>
     <button class="nav-hamburger" id="hamburger" aria-label="Menú">☰</button>
   </nav>
@@ -46,6 +46,27 @@
       <!-- SVG del triángulo mini renderizado por JS -->
     </div>
   </section>
+
+  <!-- ══════════════════ EXPLAINER ANIMADO: de 1D a 2D ════════════════════ -->
+  <div class="hero-explainer">
+    <div class="hero-exp-inner">
+      <div class="hero-exp-anim" id="heroExpAnim" aria-hidden="true"></div>
+      <div class="hero-exp-text">
+        <p class="hero-exp-step active" data-step="0">El eje izquierda–derecha tradicional captura solo la <em>dirección</em> del Estado, pero ignora cuánto poder tiene para actuar.</p>
+        <p class="hero-exp-step" data-step="1">Al añadir el <strong>alcance estatal</strong> (IAE) como segunda dimensión, el espacio lineal se convierte en un plano triangular.</p>
+        <p class="hero-exp-step" data-step="2">Los vértices son los extremos conceptuales: ningún régimen real los habita. Los regímenes concretos viven en el interior del triángulo.</p>
+      </div>
+      <div class="hero-exp-controls">
+        <button class="hero-exp-btn" id="expPrev" disabled>← Anterior</button>
+        <div class="hero-exp-dots">
+          <span class="exp-dot active" data-step="0"></span>
+          <span class="exp-dot" data-step="1"></span>
+          <span class="exp-dot" data-step="2"></span>
+        </div>
+        <button class="hero-exp-btn" id="expNext">Siguiente →</button>
+      </div>
+    </div>
+  </div>
 
   <!-- ══════════════════════════════ EL TRIÁNGULO ═══════════════════════════════ -->
   <section id="triangulo" class="section">
@@ -71,6 +92,16 @@
         <input type="range" id="iueSlider" min="-100" max="100" value="0" step="1" />
         <span class="control-val" id="iueVal">0</span>
       </div>
+    </div>
+
+    <!-- Toggle vista dual IAEc / IAEe -->
+    <div class="dual-view-toggle">
+      <label class="dual-toggle-label">
+        <input type="checkbox" id="dualViewToggle" />
+        <span class="dual-toggle-track"></span>
+        <span>Mostrar asimetría IAEc / IAEe</span>
+      </label>
+      <span class="dual-view-hint">Visualiza cómo difiere el alcance civil del económico</span>
     </div>
 
     <!-- Triángulo SVG principal -->
@@ -148,6 +179,18 @@
                   fill="none" stroke="var(--c-user)" stroke-width="1" opacity="0"/>
         </g>
 
+        <!-- Punto IAEc (vista dual, oculto por defecto) -->
+        <g id="dualPointC" opacity="0">
+          <circle id="dualDotC" cx="300" cy="265" r="8"
+                  fill="var(--c-iaec-bg)" stroke="white" stroke-width="1.5"/>
+          <text id="dualLabelC" x="300" y="250" text-anchor="middle"
+                font-family="DM Sans, sans-serif" font-size="9" fill="var(--c-iaec-bg)">IAEc</text>
+        </g>
+
+        <!-- Línea conectora vista dual -->
+        <line id="dualLine" x1="300" y1="265" x2="300" y2="265"
+              stroke="var(--c-iaec-bg)" stroke-width="1.5" stroke-dasharray="4 3" opacity="0"/>
+
         <!-- Vector IVR (oculto por defecto) -->
         <line id="ivrVector" x1="300" y1="265" x2="300" y2="200"
               stroke="var(--c-ivr)" stroke-width="2.5" stroke-dasharray="6 3"
@@ -160,6 +203,22 @@
         <p class="tt-name"></p>
         <p class="tt-desc"></p>
         <div class="tt-indices"></div>
+      </div>
+    </div>
+
+    <!-- Lectura contextual viva -->
+    <div class="context-reading" id="contextReading">
+      <div class="context-reading-inner">
+        <span class="context-reading-tag">Lectura del modelo</span>
+        <p id="contextText">Mueve los sliders o haz clic en el triángulo para ver la interpretación de esta posición.</p>
+        <div class="context-reading-student student-only" id="contextStudent" hidden>
+          <span class="context-student-label">Lógica del modelo</span>
+          <p id="contextStudentText"></p>
+        </div>
+        <div class="context-reading-expert expert-only" id="contextExpert" hidden>
+          <span class="context-expert-label">Nota técnica</span>
+          <p id="contextExpertText"></p>
+        </div>
       </div>
     </div>
 
@@ -204,11 +263,15 @@
           ¿Cuánto interviene el Estado en la vida de las personas y en la economía?
           Es el eje <em>vertical</em> del triángulo: cuanto más alto, más presente es el Estado.
         </p>
+        <div class="card-student student-only" hidden>
+          <span class="card-student-label">La trampa del IAE bajo</span>
+          <p>Somalia en los años 90 tenía IAE cercano a cero, pero no era un paraíso liberal: era un Estado fallido. El IAE mide la <em>capacidad coercitiva del Estado</em>, no la libertad real de sus habitantes. Un IAE bajo por colapso es diferente a uno bajo por diseño institucional.</p>
+        </div>
         <div class="card-technical" hidden>
           <code>IAE = (IAEc × 0.50) + (IAEe × 0.50)</code>
           <p>Pondera igualmente el alcance civil y el económico. Test de sensibilidad (60/40 y 40/60) produjo variación &lt; 4 puntos.</p>
         </div>
-        <button class="card-toggle">Ver fórmula ↓</button>
+        <button class="card-toggle">Ver más ↓</button>
       </article>
 
       <article class="index-card" data-index="iaec">
@@ -218,11 +281,15 @@
           ¿Puede el Estado controlar lo que las personas dicen, piensan o hacen en su vida cotidiana?
           Incluye libertad de prensa, control de fuerzas de seguridad e integridad personal.
         </p>
+        <div class="card-student student-only" hidden>
+          <span class="card-student-label">La asimetría civil–económica</span>
+          <p>China muestra un IAEc muy alto (control político total) con un IAEe moderado (economía parcialmente liberalizada). Esto produce una asimetría estructural que el modelo capta y que los ejes tradicionales no pueden representar.</p>
+        </div>
         <div class="card-technical" hidden>
           <code>IAEc_efectivo = IAEc_formal × (1 − FTE)</code>
           <p>FTE = Fragmentación Territorial Efectiva. Corrector máximo 0.80. El ecosistema informacional pesa 30% del IAEc.</p>
         </div>
-        <button class="card-toggle">Ver fórmula ↓</button>
+        <button class="card-toggle">Ver más ↓</button>
       </article>
 
       <article class="index-card" data-index="iaee">
@@ -232,11 +299,15 @@
           ¿Controla el Estado la propiedad, las empresas, el mercado?
           Un Estado puede ser muy liberal en lo civil pero muy intervencionista en lo económico.
         </p>
+        <div class="card-student student-only" hidden>
+          <span class="card-student-label">El corrector de captura</span>
+          <p>Si las élites privadas capturan al Estado, el control <em>formal</em> y el <em>efectivo</em> divergen: el Estado proclama intervenir pero en la práctica beneficia a actores privados. La fórmula ajusta el IAEe formal por ese factor de captura.</p>
+        </div>
         <div class="card-technical" hidden>
           <code>IAEe_efectivo = IAEe_formal × (1 − CE × 0.30)</code>
           <p>CE = Corrector de Captura por Élites. Reduce el IAEe hasta 30%. Hiperinflación aplica corrector adicional.</p>
         </div>
-        <button class="card-toggle">Ver fórmula ↓</button>
+        <button class="card-toggle">Ver más ↓</button>
       </article>
 
       <article class="index-card" data-index="iue">
@@ -246,11 +317,50 @@
           ¿Para qué usa el Estado su poder? No mide <em>cuánto</em> interviene, sino <em>hacia dónde</em>:
           hacia lo universal e igualitario (izquierda) o hacia lo particular y conservador (derecha).
         </p>
+        <!-- Eje IUE interactivo -->
+        <div class="iue-axis-wrap">
+          <div class="iue-axis-labels">
+            <span>IUE = −100</span>
+            <span>IUE = 0</span>
+            <span>IUE = +100</span>
+          </div>
+          <div class="iue-axis-bar">
+            <div class="iue-axis-track">
+              <div class="iue-axis-fill-left"></div>
+              <div class="iue-axis-fill-right"></div>
+            </div>
+            <div class="iue-axis-marker" id="iueAxisMarker"></div>
+          </div>
+          <div class="iue-axis-poles">
+            <div class="iue-pole iue-pole-left">
+              <strong>Polo universalista-progresista</strong>
+              <ul>
+                <li>Redistribución de riqueza</li>
+                <li>Derechos civiles homogéneos</li>
+                <li>Laicismo activo</li>
+                <li>Colectivización económica</li>
+              </ul>
+            </div>
+            <div class="iue-pole iue-pole-right">
+              <strong>Polo particularista-conservador</strong>
+              <ul>
+                <li>Privilegios de grupos identitarios</li>
+                <li>Instituciones religiosas como fuente de ley</li>
+                <li>Propiedad concentrada en élites</li>
+                <li>Nacionalismo cultural</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="card-student student-only" hidden>
+          <span class="card-student-label">¿Por qué no es solo izquierda/derecha convencional?</span>
+          <p>La distinción izquierda/derecha clásica mezcla dirección con alcance. Un Estado puede ser muy intervencionista (alto IAE) y orientado hacia derechos universales (IUE negativo), como Suecia, o igualmente intervencionista pero orientado a privilegiar una identidad nacional particular (IUE positivo), como la Alemania nazi. El IUE separa esa dimensión.</p>
+        </div>
         <div class="card-technical" hidden>
           <code>IUE = Σ (componente_i × peso_i)</code>
           <p>IUE = 0: centro pragmático. IUE = +100: polo particularista-conservador. Mide uso efectivo observable, no retórica.</p>
         </div>
-        <button class="card-toggle">Ver fórmula ↓</button>
+        <button class="card-toggle">Ver más ↓</button>
       </article>
 
       <article class="index-card" data-index="iuee">
@@ -260,11 +370,15 @@
           Combina la dirección del uso con la capacidad real del Estado.
           Un Estado muy ideológico pero muy débil tiene bajo impacto efectivo.
         </p>
+        <div class="card-student student-only" hidden>
+          <span class="card-student-label">Por qué el IUEe importa más que el IUE solo</span>
+          <p>Dos regímenes pueden tener el mismo IUE (misma orientación ideológica), pero si uno tiene IAE=30 y el otro IAE=90, su impacto real es radicalmente diferente. El IUEe captura esa diferencia: la intensidad ideológica <em>ponderada por el poder real para aplicarla</em>.</p>
+        </div>
         <div class="card-technical" hidden>
           <code>IUEe = (IUE / 100) × IAE</code>
           <p>Producto del vector de uso por el alcance real. Permite comparar regímenes con similares IUE pero distinto poder.</p>
         </div>
-        <button class="card-toggle">Ver fórmula ↓</button>
+        <button class="card-toggle">Ver más ↓</button>
       </article>
 
       <article class="index-card" data-index="ivr">
@@ -274,11 +388,15 @@
           ¿Hacia dónde se mueve el régimen y con qué velocidad?
           El IVR es la síntesis de todas las fuerzas, catalizadores e inhibidores actuando al mismo tiempo.
         </p>
+        <div class="card-student student-only" hidden>
+          <span class="card-student-label">El modelo como proyección, no solo como fotografía</span>
+          <p>La mayoría de los índices políticos describen dónde está un régimen hoy. El IVR intenta responder: ¿hacia dónde va? Un liderazgo carismático puede acelerar la trayectoria; instituciones consolidadas la frenan. Una crisis económica puede invertir la dirección por completo.</p>
+        </div>
         <div class="card-technical" hidden>
           <code>Velocidad_IVR × (1 + IC1/100) × (1 − II1/100)</code>
           <p>IC1 (liderazgo) acelera; II1 (legitimidad institucional) frena. IC2 (crisis/bonanza) activa o invierte fuerzas.</p>
         </div>
-        <button class="card-toggle">Ver fórmula ↓</button>
+        <button class="card-toggle">Ver más ↓</button>
       </article>
 
     </div>
@@ -293,6 +411,19 @@
         Estos casos son ilustrativos del modelo, no diagnósticos definitivos.
         Los valores son aproximados para fines didácticos.
       </p>
+    </div>
+
+    <!-- Filtros de zona -->
+    <div class="casos-filters">
+      <button class="caso-filter active" data-filter="all">Todos</button>
+      <button class="caso-filter" data-filter="democratico">Democráticos</button>
+      <button class="caso-filter" data-filter="autoritario">Autoritarismos</button>
+      <button class="caso-filter" data-filter="extremo">Extremos</button>
+      <label class="trayectoria-toggle">
+        <input type="checkbox" id="trayectoriaToggle" />
+        <span class="tray-toggle-track"></span>
+        Mostrar trayectorias
+      </label>
     </div>
 
     <div class="casos-layout">

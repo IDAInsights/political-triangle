@@ -960,3 +960,510 @@ body.expert-mode .expert-only {
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover { background: var(--ink-3); }
+
+/* ─── MODO PROGRESIVO: 3 NIVELES ──────────────────── */
+/* Niveles: público (default) → estudiante → especialista */
+/* Clase .student-mode en body activa nivel 2 */
+
+body.student-mode .student-only,
+body.expert-mode .student-only {
+  display: block !important;
+}
+
+body:not(.student-mode):not(.expert-mode) .student-only {
+  display: none !important;
+}
+
+/* El experto ve todo */
+body.expert-mode .card-student,
+body.expert-mode .card-technical { display: block !important; }
+
+.card-student {
+  margin-top: var(--gap-md);
+  padding: var(--gap-md);
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--teal);
+  font-size: 0.88rem;
+}
+
+.card-student p {
+  color: var(--ink-2);
+  line-height: 1.65;
+  margin-top: 6px;
+}
+
+.card-student-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--teal);
+}
+
+/* ─── EXPLAINER ANIMADO HERO ──────────────────────── */
+.hero-explainer {
+  background: var(--surface);
+  border-top: 1px solid var(--surface-2);
+  border-bottom: 1px solid var(--surface-2);
+  padding: var(--gap-xl) var(--gap-lg);
+}
+
+.hero-exp-inner {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap-xl);
+  align-items: center;
+}
+
+.hero-exp-anim {
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-exp-anim svg {
+  width: 100%;
+  max-width: 380px;
+}
+
+.hero-exp-text {
+  position: relative;
+  min-height: 80px;
+}
+
+.hero-exp-step {
+  font-size: 1.1rem;
+  color: var(--ink-2);
+  line-height: 1.7;
+  display: none;
+  animation: fadeUp 0.4s var(--ease) both;
+}
+
+.hero-exp-step.active { display: block; }
+
+.hero-exp-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-md);
+  margin-top: var(--gap-lg);
+  grid-column: 2;
+}
+
+.hero-exp-btn {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--ink-2);
+  padding: 8px 16px;
+  border: 1px solid var(--surface-2);
+  border-radius: 100px;
+  background: var(--white);
+  transition: all var(--t-fast);
+}
+
+.hero-exp-btn:hover:not(:disabled) {
+  border-color: var(--ink-3);
+  color: var(--ink);
+}
+
+.hero-exp-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.hero-exp-dots {
+  display: flex;
+  gap: 8px;
+  flex: 1;
+  justify-content: center;
+}
+
+.exp-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  cursor: pointer;
+  transition: background var(--t-fast), transform var(--t-fast);
+}
+
+.exp-dot.active {
+  background: var(--ink);
+  transform: scale(1.2);
+}
+
+@media (max-width: 720px) {
+  .hero-exp-inner {
+    grid-template-columns: 1fr;
+    gap: var(--gap-lg);
+  }
+  .hero-exp-controls {
+    grid-column: auto;
+  }
+}
+
+/* ─── TOGGLE VISTA DUAL IAEc / IAEe ───────────────── */
+.dual-view-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-md);
+  max-width: 640px;
+  margin: 0 auto var(--gap-lg);
+  padding: var(--gap-md);
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--surface-2);
+  flex-wrap: wrap;
+}
+
+.dual-toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--ink-2);
+  user-select: none;
+}
+
+.dual-toggle-label input { display: none; }
+
+.dual-toggle-track {
+  width: 36px;
+  height: 20px;
+  background: var(--surface-2);
+  border-radius: 10px;
+  position: relative;
+  transition: background var(--t-fast);
+  flex-shrink: 0;
+}
+
+.dual-toggle-track::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--ink-3);
+  transition: transform var(--t-fast), background var(--t-fast);
+}
+
+.dual-toggle-label input:checked + .dual-toggle-track {
+  background: var(--teal);
+}
+
+.dual-toggle-label input:checked + .dual-toggle-track::after {
+  transform: translateX(16px);
+  background: white;
+}
+
+.dual-view-hint {
+  font-size: 0.8rem;
+  color: var(--ink-4);
+}
+
+/* ─── LECTURA CONTEXTUAL VIVA ─────────────────────── */
+.context-reading {
+  max-width: 600px;
+  margin: var(--gap-lg) auto 0;
+  background: var(--white);
+  border: 1px solid var(--surface-2);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: box-shadow var(--t-med);
+}
+
+.context-reading:has(#contextText:not(:empty)) {
+  box-shadow: var(--shadow-sm);
+}
+
+.context-reading-inner {
+  padding: var(--gap-lg);
+}
+
+.context-reading-tag {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: var(--gap-sm);
+}
+
+#contextText {
+  font-size: 0.95rem;
+  color: var(--ink-2);
+  line-height: 1.7;
+  transition: opacity 0.25s;
+}
+
+.context-reading-student {
+  margin-top: var(--gap-md);
+  padding-top: var(--gap-md);
+  border-top: 1px solid var(--surface-2);
+}
+
+.context-student-label,
+.context-expert-label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.context-student-label { color: var(--teal); }
+.context-expert-label  { color: var(--purple); }
+
+#contextStudentText,
+#contextExpertText {
+  font-size: 0.88rem;
+  color: var(--ink-3);
+  line-height: 1.65;
+}
+
+.context-reading-expert {
+  margin-top: var(--gap-md);
+  padding-top: var(--gap-md);
+  border-top: 1px solid var(--surface-2);
+}
+
+/* Nota epistémica para casos de alta coerción */
+.epistemic-note {
+  display: none;
+  margin-top: var(--gap-md);
+  padding: var(--gap-sm) var(--gap-md);
+  background: var(--amber-light);
+  border-left: 3px solid var(--amber);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  font-size: 0.82rem;
+  color: var(--amber);
+}
+
+.epistemic-note.visible { display: block; }
+
+/* ─── EJE IUE INTERACTIVO ─────────────────────────── */
+.iue-axis-wrap {
+  margin-top: var(--gap-md);
+  padding-top: var(--gap-md);
+  border-top: 1px solid var(--surface-2);
+}
+
+.iue-axis-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  font-family: 'SF Mono', monospace;
+  color: var(--ink-4);
+  margin-bottom: 8px;
+}
+
+.iue-axis-bar {
+  position: relative;
+  height: 8px;
+  margin-bottom: var(--gap-md);
+}
+
+.iue-axis-track {
+  position: absolute;
+  inset: 0;
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+}
+
+.iue-axis-fill-left {
+  flex: 1;
+  background: linear-gradient(to right, #1B5C9E, #E8E5DF);
+}
+
+.iue-axis-fill-right {
+  flex: 1;
+  background: linear-gradient(to right, #E8E5DF, #8B1A1A);
+}
+
+.iue-axis-marker {
+  position: absolute;
+  top: -3px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--ink);
+  border: 2px solid var(--white);
+  box-shadow: var(--shadow-sm);
+  transform: translateX(-50%);
+  transition: left 0.3s var(--ease);
+  left: 50%;
+}
+
+.iue-axis-poles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap-md);
+}
+
+.iue-pole {
+  font-size: 0.82rem;
+  padding: var(--gap-sm) var(--gap-md);
+  border-radius: var(--radius-md);
+}
+
+.iue-pole strong {
+  display: block;
+  font-size: 0.78rem;
+  margin-bottom: 6px;
+}
+
+.iue-pole ul {
+  list-style: none;
+  padding: 0;
+}
+
+.iue-pole ul li {
+  padding: 2px 0 2px 12px;
+  position: relative;
+  color: var(--ink-3);
+  font-size: 0.8rem;
+}
+
+.iue-pole ul li::before {
+  content: '·';
+  position: absolute;
+  left: 2px;
+}
+
+.iue-pole-left {
+  background: var(--blue-light);
+  border-left: 3px solid var(--blue);
+}
+
+.iue-pole-left strong { color: var(--blue); }
+
+.iue-pole-right {
+  background: var(--red-light);
+  border-left: 3px solid var(--red);
+}
+
+.iue-pole-right strong { color: var(--red); }
+
+/* ─── FILTROS DE CASOS ────────────────────────────── */
+.casos-filters {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-sm);
+  margin-bottom: var(--gap-lg);
+  flex-wrap: wrap;
+}
+
+.caso-filter {
+  font-size: 0.82rem;
+  font-weight: 500;
+  padding: 6px 16px;
+  border-radius: 100px;
+  border: 1px solid var(--surface-2);
+  background: var(--white);
+  color: var(--ink-3);
+  transition: all var(--t-fast);
+}
+
+.caso-filter:hover { border-color: var(--ink-3); color: var(--ink); }
+
+.caso-filter.active {
+  background: var(--ink);
+  color: var(--white);
+  border-color: var(--ink);
+}
+
+.trayectoria-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--ink-3);
+  cursor: pointer;
+  margin-left: auto;
+  user-select: none;
+}
+
+.trayectoria-toggle input { display: none; }
+
+.tray-toggle-track {
+  width: 32px;
+  height: 18px;
+  background: var(--surface-2);
+  border-radius: 9px;
+  position: relative;
+  transition: background var(--t-fast);
+  flex-shrink: 0;
+}
+
+.tray-toggle-track::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--ink-3);
+  transition: transform var(--t-fast), background var(--t-fast);
+}
+
+.trayectoria-toggle input:checked + .tray-toggle-track {
+  background: var(--purple);
+}
+
+.trayectoria-toggle input:checked + .tray-toggle-track::after {
+  transform: translateX(14px);
+  background: white;
+}
+
+.caso-item.hidden { display: none; }
+
+/* ─── BADGE ALTA COERCIÓN ─────────────────────────── */
+.caso-coercion-badge {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--amber);
+  background: var(--amber-light);
+  padding: 2px 8px;
+  border-radius: 100px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+/* ─── NOTA EPISTÉMICA ─────────────────────────────── */
+.epistemic-note {
+  display: none;
+  margin-top: 6px;
+  padding: var(--gap-sm) var(--gap-md);
+  background: var(--amber-light);
+  border-left: 3px solid var(--amber);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  font-size: 0.82rem;
+  color: var(--ink-2);
+  line-height: 1.6;
+}
+
+.epistemic-note.visible { display: block; }
+.epistemic-note strong { color: var(--amber); }
+
+/* ─── CONTEXT READING TRANSITIONS ────────────────── */
+#contextText {
+  transition: opacity 0.2s ease;
+}
+
+/* ─── TRAYECTORIAS VISIBLES ───────────────────────── */
+.trayectoria-group {
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+}
