@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>El Triángulo Político</title>
+  <meta name="description" content="Un modelo analítico para describir, comparar y proyectar la trayectoria de regímenes políticos." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════ NAV ═══════════════════════════════════ -->
+  <nav id="nav">
+    <a href="#inicio" class="nav-logo">El Triángulo<span>Político</span></a>
+    <div class="nav-links">
+      <a href="#triangulo">Explorar</a>
+      <a href="#indices">Índices</a>
+      <a href="#casos">Casos</a>
+      <a href="#metodologia">Metodología</a>
+    </div>
+    <button class="nav-toggle" id="modeToggle" aria-label="Cambiar modo">
+      <span id="modeLabel">Modo especialista</span>
+    </button>
+    <button class="nav-hamburger" id="hamburger" aria-label="Menú">☰</button>
+  </nav>
+
+  <!-- ══════════════════════════════════ HERO ═══════════════════════════════════ -->
+  <section id="inicio" class="hero">
+    <div class="hero-text">
+      <p class="hero-eyebrow">Codebook V3.2</p>
+      <h1>¿Dónde está<br /><em>realmente</em> un<br />régimen político?</h1>
+      <p class="hero-sub">
+        El eje izquierda–derecha captura solo una dimensión del poder.
+        Este modelo usa un triángulo para mostrar el alcance del Estado
+        y la dirección en que lo utiliza.
+      </p>
+      <div class="hero-ctas">
+        <a href="#triangulo" class="btn btn-primary">Explorar el modelo</a>
+        <a href="#metodologia" class="btn btn-ghost">Ver metodología →</a>
+      </div>
+    </div>
+    <div class="hero-visual" id="heroVisual" aria-hidden="true">
+      <!-- SVG del triángulo mini renderizado por JS -->
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════ EL TRIÁNGULO ═══════════════════════════════ -->
+  <section id="triangulo" class="section">
+    <div class="section-header">
+      <p class="section-tag">El espacio político</p>
+      <h2>El triángulo de los regímenes</h2>
+      <p class="section-desc">
+        Cada punto dentro del triángulo representa una combinación de
+        <strong>alcance estatal</strong> (IAE) y <strong>uso del Estado</strong> (IUE).
+        Los vértices son los extremos conceptuales; ningún régimen real los habita exactamente.
+      </p>
+    </div>
+
+    <!-- Controles del triángulo -->
+    <div class="triangle-controls">
+      <div class="control-group">
+        <label for="iaeSlider">Alcance estatal (IAE)</label>
+        <input type="range" id="iaeSlider" min="0" max="100" value="50" step="1" />
+        <span class="control-val" id="iaeVal">50</span>
+      </div>
+      <div class="control-group">
+        <label for="iueSlider">Uso del Estado (IUE)</label>
+        <input type="range" id="iueSlider" min="-100" max="100" value="0" step="1" />
+        <span class="control-val" id="iueVal">0</span>
+      </div>
+    </div>
+
+    <!-- Triángulo SVG principal -->
+    <div class="triangle-container">
+      <svg id="mainTriangle" viewBox="0 0 600 560" xmlns="http://www.w3.org/2000/svg">
+        <!-- Zonas de fondo -->
+        <defs>
+          <radialGradient id="gLiberal" cx="50%" cy="30%" r="50%">
+            <stop offset="0%" stop-color="var(--c-liberal)" stop-opacity="0.25"/>
+            <stop offset="100%" stop-color="var(--c-liberal)" stop-opacity="0"/>
+          </radialGradient>
+          <radialGradient id="gInterv" cx="50%" cy="65%" r="50%">
+            <stop offset="0%" stop-color="var(--c-interv)" stop-opacity="0.2"/>
+            <stop offset="100%" stop-color="var(--c-interv)" stop-opacity="0"/>
+          </radialGradient>
+          <marker id="arrowIVR" viewBox="0 0 10 10" refX="8" refY="5"
+                  markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="var(--c-ivr)" stroke-width="1.5"
+                  stroke-linecap="round" stroke-linejoin="round"/>
+          </marker>
+        </defs>
+
+        <!-- Triángulo principal -->
+        <polygon id="triPolygon"
+          points="300,40 80,490 520,490"
+          fill="var(--bg-triangle)"
+          stroke="var(--border-main)"
+          stroke-width="1.5"/>
+
+        <!-- Zonas internas -->
+        <polygon points="300,40 80,490 520,490" fill="url(#gLiberal)"/>
+        <polygon points="300,40 80,490 520,490" fill="url(#gInterv)"/>
+
+        <!-- Etiquetas de zona -->
+        <text class="zone-label" x="300" y="200" text-anchor="middle">Liberalismo</text>
+        <text class="zone-label" x="300" y="380" text-anchor="middle">Intervencionismo</text>
+
+        <!-- Eje horizontal IUE -->
+        <line x1="80" y1="490" x2="520" y2="490" stroke="var(--border-axis)" stroke-width="0.5" stroke-dasharray="4 4"/>
+
+        <!-- Vértices: etiquetas clicables -->
+        <g class="vertex" id="v-anarquia" data-key="anarquia" tabindex="0" role="button"
+           aria-label="Vértice Anarquía">
+          <circle cx="300" cy="40" r="14" fill="var(--c-anarquia)" opacity="0.15"/>
+          <circle cx="300" cy="40" r="6" fill="var(--c-anarquia)"/>
+          <text x="300" y="22" text-anchor="middle" class="vertex-label">Anarquía</text>
+          <text x="300" y="10" text-anchor="middle" class="vertex-sub">IAE=0</text>
+        </g>
+
+        <g class="vertex" id="v-comunismo" data-key="comunismo" tabindex="0" role="button"
+           aria-label="Vértice Comunismo">
+          <circle cx="80" cy="490" r="14" fill="var(--c-comunismo)" opacity="0.15"/>
+          <circle cx="80" cy="490" r="6" fill="var(--c-comunismo)"/>
+          <text x="30" y="508" text-anchor="middle" class="vertex-label">Comunismo</text>
+          <text x="30" y="520" text-anchor="middle" class="vertex-sub">IUE=−100</text>
+        </g>
+
+        <g class="vertex" id="v-fascismo" data-key="fascismo" tabindex="0" role="button"
+           aria-label="Vértice Fascismo / Teocracia">
+          <circle cx="520" cy="490" r="14" fill="var(--c-fascismo)" opacity="0.15"/>
+          <circle cx="520" cy="490" r="6" fill="var(--c-fascismo)"/>
+          <text x="572" y="508" text-anchor="middle" class="vertex-label">Fascismo</text>
+          <text x="572" y="520" text-anchor="middle" class="vertex-sub">IUE=+100</text>
+        </g>
+
+        <!-- Etiquetas laterales -->
+        <text x="148" y="272" text-anchor="middle" class="side-label" transform="rotate(-60,148,272)">Extrema izquierda</text>
+        <text x="452" y="272" text-anchor="middle" class="side-label" transform="rotate(60,452,272)">Extrema derecha</text>
+
+        <!-- Punto de usuario (interactivo) -->
+        <g id="userPoint">
+          <circle id="userDot" cx="300" cy="265" r="10"
+                  fill="var(--c-user)" stroke="white" stroke-width="2" opacity="0"/>
+          <circle id="userPulse" cx="300" cy="265" r="18"
+                  fill="none" stroke="var(--c-user)" stroke-width="1" opacity="0"/>
+        </g>
+
+        <!-- Vector IVR (oculto por defecto) -->
+        <line id="ivrVector" x1="300" y1="265" x2="300" y2="200"
+              stroke="var(--c-ivr)" stroke-width="2.5" stroke-dasharray="6 3"
+              marker-end="url(#arrowIVR)" opacity="0"/>
+
+      </svg>
+
+      <!-- Tooltip flotante -->
+      <div id="triangleTooltip" class="tri-tooltip" role="tooltip" hidden>
+        <p class="tt-name"></p>
+        <p class="tt-desc"></p>
+        <div class="tt-indices"></div>
+      </div>
+    </div>
+
+    <!-- Panel de posición calculada -->
+    <div class="position-panel" id="positionPanel">
+      <div class="pos-item">
+        <span class="pos-label">IAE</span>
+        <span class="pos-value" id="posIAE">—</span>
+        <span class="pos-desc">Alcance estatal</span>
+      </div>
+      <div class="pos-item">
+        <span class="pos-label">IUE</span>
+        <span class="pos-value" id="posIUE">—</span>
+        <span class="pos-desc">Uso del Estado</span>
+      </div>
+      <div class="pos-item">
+        <span class="pos-label">IUEe</span>
+        <span class="pos-value" id="posIUEe">—</span>
+        <span class="pos-desc">Uso efectivo</span>
+      </div>
+      <div class="pos-item">
+        <span class="pos-label">Zona</span>
+        <span class="pos-value pos-zone" id="posZone">—</span>
+        <span class="pos-desc">Clasificación</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════ ÍNDICES ═════════════════════════════════ -->
+  <section id="indices" class="section section-alt">
+    <div class="section-header">
+      <p class="section-tag">Los instrumentos</p>
+      <h2>¿Qué mide el modelo?</h2>
+    </div>
+
+    <div class="indices-grid">
+
+      <article class="index-card" data-index="iae">
+        <div class="card-icon" style="background:var(--c-iae-bg)">IAE</div>
+        <h3>Índice de Alcance Estatal</h3>
+        <p class="card-plain">
+          ¿Cuánto interviene el Estado en la vida de las personas y en la economía?
+          Es el eje <em>vertical</em> del triángulo: cuanto más alto, más presente es el Estado.
+        </p>
+        <div class="card-technical" hidden>
+          <code>IAE = (IAEc × 0.50) + (IAEe × 0.50)</code>
+          <p>Pondera igualmente el alcance civil y el económico. Test de sensibilidad (60/40 y 40/60) produjo variación &lt; 4 puntos.</p>
+        </div>
+        <button class="card-toggle">Ver fórmula ↓</button>
+      </article>
+
+      <article class="index-card" data-index="iaec">
+        <div class="card-icon" style="background:var(--c-iaec-bg)">IAEc</div>
+        <h3>Alcance Estatal Civil</h3>
+        <p class="card-plain">
+          ¿Puede el Estado controlar lo que las personas dicen, piensan o hacen en su vida cotidiana?
+          Incluye libertad de prensa, control de fuerzas de seguridad e integridad personal.
+        </p>
+        <div class="card-technical" hidden>
+          <code>IAEc_efectivo = IAEc_formal × (1 − FTE)</code>
+          <p>FTE = Fragmentación Territorial Efectiva. Corrector máximo 0.80. El ecosistema informacional pesa 30% del IAEc.</p>
+        </div>
+        <button class="card-toggle">Ver fórmula ↓</button>
+      </article>
+
+      <article class="index-card" data-index="iaee">
+        <div class="card-icon" style="background:var(--c-iaee-bg)">IAEe</div>
+        <h3>Alcance Estatal Económico</h3>
+        <p class="card-plain">
+          ¿Controla el Estado la propiedad, las empresas, el mercado?
+          Un Estado puede ser muy liberal en lo civil pero muy intervencionista en lo económico.
+        </p>
+        <div class="card-technical" hidden>
+          <code>IAEe_efectivo = IAEe_formal × (1 − CE × 0.30)</code>
+          <p>CE = Corrector de Captura por Élites. Reduce el IAEe hasta 30%. Hiperinflación aplica corrector adicional.</p>
+        </div>
+        <button class="card-toggle">Ver fórmula ↓</button>
+      </article>
+
+      <article class="index-card" data-index="iue">
+        <div class="card-icon" style="background:var(--c-iue-bg)">IUE</div>
+        <h3>Índice de Uso Estatal</h3>
+        <p class="card-plain">
+          ¿Para qué usa el Estado su poder? No mide <em>cuánto</em> interviene, sino <em>hacia dónde</em>:
+          hacia lo universal e igualitario (izquierda) o hacia lo particular y conservador (derecha).
+        </p>
+        <div class="card-technical" hidden>
+          <code>IUE = Σ (componente_i × peso_i)</code>
+          <p>IUE = 0: centro pragmático. IUE = +100: polo particularista-conservador. Mide uso efectivo observable, no retórica.</p>
+        </div>
+        <button class="card-toggle">Ver fórmula ↓</button>
+      </article>
+
+      <article class="index-card" data-index="iuee">
+        <div class="card-icon" style="background:var(--c-iuee-bg)">IUEe</div>
+        <h3>Uso Estatal Efectivo</h3>
+        <p class="card-plain">
+          Combina la dirección del uso con la capacidad real del Estado.
+          Un Estado muy ideológico pero muy débil tiene bajo impacto efectivo.
+        </p>
+        <div class="card-technical" hidden>
+          <code>IUEe = (IUE / 100) × IAE</code>
+          <p>Producto del vector de uso por el alcance real. Permite comparar regímenes con similares IUE pero distinto poder.</p>
+        </div>
+        <button class="card-toggle">Ver fórmula ↓</button>
+      </article>
+
+      <article class="index-card" data-index="ivr">
+        <div class="card-icon" style="background:var(--c-ivr-bg)">IVR</div>
+        <h3>Índice de Vector Resultante</h3>
+        <p class="card-plain">
+          ¿Hacia dónde se mueve el régimen y con qué velocidad?
+          El IVR es la síntesis de todas las fuerzas, catalizadores e inhibidores actuando al mismo tiempo.
+        </p>
+        <div class="card-technical" hidden>
+          <code>Velocidad_IVR × (1 + IC1/100) × (1 − II1/100)</code>
+          <p>IC1 (liderazgo) acelera; II1 (legitimidad institucional) frena. IC2 (crisis/bonanza) activa o invierte fuerzas.</p>
+        </div>
+        <button class="card-toggle">Ver fórmula ↓</button>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════════ CASOS ══════════════════════════════════ -->
+  <section id="casos" class="section">
+    <div class="section-header">
+      <p class="section-tag">Ejemplos ilustrativos</p>
+      <h2>Regímenes en el triángulo</h2>
+      <p class="section-desc">
+        Estos casos son ilustrativos del modelo, no diagnósticos definitivos.
+        Los valores son aproximados para fines didácticos.
+      </p>
+    </div>
+
+    <div class="casos-layout">
+      <div class="casos-list" id="casosList">
+        <!-- Generado por JS -->
+      </div>
+      <div class="casos-triangle-wrap">
+        <svg id="casosTriangle" viewBox="0 0 500 460" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="250,30 60,430 440,430"
+            fill="var(--bg-triangle)" stroke="var(--border-main)" stroke-width="1.5"/>
+          <text class="zone-label" x="250" y="180" text-anchor="middle">Liberalismo</text>
+          <text class="zone-label" x="250" y="340" text-anchor="middle">Intervencionismo</text>
+          <!-- Puntos de casos generados por JS -->
+          <g id="casosPoints"></g>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════ METODOLOGÍA ══════════════════════════════ -->
+  <section id="metodologia" class="section section-alt">
+    <div class="section-header">
+      <p class="section-tag">Para especialistas</p>
+      <h2>Fundamentos metodológicos</h2>
+    </div>
+
+    <div class="metodologia-grid">
+
+      <div class="met-block">
+        <h3>Objeto de estudio</h3>
+        <p>
+          El modelo mapea el espacio de la <strong>política coercitiva</strong>: formas de organización
+          que involucran medios coercitivos legitimados. No mapea cooperación voluntaria
+          ni acuerdo contractual libre. Definición weberiana del Estado como Sistema de Medios
+          Coercitivos Legitimados.
+        </p>
+      </div>
+
+      <div class="met-block">
+        <h3>Advertencia metodológica</h3>
+        <p>
+          Es un instrumento heurístico, no un sistema determinista. Las predicciones son
+          hipótesis de trabajo sujetas a revisión empírica continua.
+          <strong>No prescribe cuánto Estado debería existir</strong> ni evalúa normativamente
+          posiciones en el triángulo.
+        </p>
+      </div>
+
+      <div class="met-block met-block-wide">
+        <h3>⚑ Protocolo para casos con violencia extrema</h3>
+        <p>
+          El modelo no distingue entre coerción como instrumento de control político y coerción
+          como instrumento de exterminio sistemático. Cuando exista evidencia documentada de
+          crímenes de lesa humanidad, genocidio o terror sistemático, el output del modelo
+          <strong>debe</strong> acompañarse de identificación explícita del tipo de coerción,
+          referencia a fuentes históricas o jurídicas, y nota al lector sobre los límites
+          de la descripción cuantitativa.
+        </p>
+      </div>
+
+      <div class="met-block">
+        <h3>Límites declarados</h3>
+        <ul class="met-list">
+          <li>Coerción no estatal sin respaldo formal</li>
+          <li>Colapsos por factores externos puros</li>
+          <li>Pobreza estructural o exclusión sin violencia directa</li>
+          <li>Eventos cisne negro y shocks geopolíticos</li>
+          <li>La distinción cualitativa entre tipos de coerción</li>
+        </ul>
+      </div>
+
+      <div class="met-block">
+        <h3>Lo que sí captura</h3>
+        <ul class="met-list met-list-ok">
+          <li>Trayectorias asimétricas IAEc/IAEe</li>
+          <li>Equilibrios estables autoritarios</li>
+          <li>Reformas frustradas por falta de consenso</li>
+          <li>Efecto diferenciado de bonanza/crisis</li>
+          <li>Captura informacional parcial</li>
+        </ul>
+      </div>
+
+      <div class="met-block met-block-codebook">
+        <h3>Codebook V3.2</h3>
+        <p>Documentación técnica completa del modelo, incluyendo tablas de calibración,
+        fórmulas, casos de validación retrospectiva y apéndice de componentes experimentales.</p>
+        <a href="#" class="btn btn-outline" id="downloadCodebook">Descargar Codebook (próximamente)</a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════ FOOTER ════════════════════════════════ -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div>
+        <p class="footer-brand">El Triángulo Político</p>
+        <p class="footer-version">Basado en Codebook V3.2</p>
+      </div>
+      <div class="footer-links">
+        <a href="#metodologia">Cómo citar</a>
+        <a href="#metodologia">Limitaciones</a>
+        <a href="#triangulo">Explorar</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="main.js"></script>
+</body>
+</html>
