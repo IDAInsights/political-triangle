@@ -693,6 +693,13 @@ body.expert-mode .card-toggle { display: none; }
 }
 
 /* ─── CASOS ───────────────────────────────────────── */
+
+#cuestionario {
+  max-width: 720px;
+  margin: 4rem auto;
+  padding: 0 1rem;
+}
+
 .casos-layout {
   display: flex;
   flex-direction: column;
