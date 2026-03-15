@@ -788,6 +788,14 @@ body.expert-mode .card-toggle { display: none; }
   text-overflow: ellipsis;
 }
 
+.caso-item.active .caso-desc {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: unset;
+  line-height: 1.55;
+  margin-top: 4px;
+}
+
 .caso-indices {
   display: flex;
   gap: 6px;
@@ -1548,6 +1556,32 @@ body.student-mode .nav-toggle {
   margin: 0 auto;
   display: block;
   box-shadow: var(--shadow-md);
+}
+
+/* ─── FUERZAS SUBSECCIONES ────────────────────────── */
+.fuerzas-subsection-header {
+  grid-column: 1 / -1;
+  padding-bottom: var(--gap-md);
+}
+
+.fuerzas-subsection-border {
+  margin-top: var(--gap-lg);
+  padding-top: var(--gap-lg);
+  border-top: 1px solid var(--surface-2);
+}
+
+.fuerzas-subheading {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  color: var(--ink);
+  margin-bottom: 6px;
+}
+
+.fuerzas-subtext {
+  font-size: 0.9rem;
+  color: var(--ink-3);
+  line-height: 1.65;
+  max-width: 700px;
 }
 
 /* ─── ZONA DEMOCRÁTICA EN TRIÁNGULO DE CASOS ─────── */

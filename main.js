@@ -1036,9 +1036,7 @@ const IDEOLOGIAS = [
     label: 'Anarquismo',
     color: '#4A90D9',
     desc: 'Rechazo de toda autoridad estatal coercitiva. Ocupa la zona superior del triángulo (IAE bajo), abarcando desde el anarcocomunismo (IUE negativo) hasta el anarcocapitalismo (IUE positivo). Ningún régimen histórico real ha llegado a este extremo.',
-    // Polígono que representa la zona: IAE 0-15, IUE -100 a +100
-    // En el SVG de 700x600 (vértices A=350,40  C=80,520  F=620,520)
-    zone: '350,40 205,130 350,130 495,130',
+    zone: '350,40 285,112 350,112 415,112',
     iaeRange: '0–15', iueRange: '−100 a +100',
     filter: 'libertario',
   },
@@ -1047,7 +1045,7 @@ const IDEOLOGIAS = [
     label: 'Libertarianismo',
     color: '#2874A6',
     desc: 'Estado mínimo con orientación conservadora o neutral. Baja carga tributaria, libre mercado, libertades civiles amplias pero sin redistribución activa. Ejemplos: Hong Kong económico, propuestas del Partido Libertario de EE.UU.',
-    zone: '427,130 350,130 350,220 403,220',
+    zone: '388,78 415,112 405,180 367,180',
     iaeRange: '8–25', iueRange: '0 a +40',
     filter: 'libertario',
   },
@@ -1056,7 +1054,7 @@ const IDEOLOGIAS = [
     label: 'Liberalismo clásico',
     color: '#1B5C9E',
     desc: 'Estado limitado como árbitro neutral. Protege derechos individuales sin imponer un proyecto cultural uniforme. Incluye democracias anglosajonas de bajo gasto estatal como Australia o Nueva Zelanda post-1984.',
-    zone: '350,130 274,220 350,220 427,220',
+    zone: '350,112 285,112 310,180 390,180',
     iaeRange: '15–30', iueRange: '−25 a +25',
     filter: 'democratico',
   },
@@ -1065,7 +1063,7 @@ const IDEOLOGIAS = [
     label: 'Socialdemocracia',
     color: '#0F6E5A',
     desc: 'Estado de bienestar con orientación redistributiva. Interviene activamente para reducir desigualdades y garantizar derechos sociales universales. Ejemplos: países nórdicos, Alemania occidental post-guerra.',
-    zone: '274,220 190,340 264,340 350,220',
+    zone: '285,112 216,248 282,248 350,112',
     iaeRange: '30–50', iueRange: '−55 a −15',
     filter: 'democratico',
   },
@@ -1074,8 +1072,8 @@ const IDEOLOGIAS = [
     label: 'Liberalismo social',
     color: '#3B6FA0',
     desc: 'Estado moderado con orientación progresista: protege libertades civiles y promueve derechos universales, con redistribución moderada. Ejemplos: Canadá, gran parte de Europa occidental.',
-    zone: '350,220 264,340 350,340 427,220',
-    iaeRange: '28–45', iueRange: '−20 a +10',
+    zone: '310,180 350,112 390,180 350,248',
+    iaeRange: '28–45', iueRange: '−20 a +20',
     filter: 'democratico',
   },
   {
@@ -1083,7 +1081,7 @@ const IDEOLOGIAS = [
     label: 'Conservadurismo democrático',
     color: '#7B4F00',
     desc: 'Estado moderado con orientación hacia el orden cultural y social establecido. Tiene contrapesos democráticos reales. Ejemplos: democristianos europeos, conservadores británicos históricos.',
-    zone: '427,220 350,340 436,340 480,260',
+    zone: '350,112 390,180 418,248 484,248',
     iaeRange: '30–50', iueRange: '+15 a +55',
     filter: 'democratico',
   },
@@ -1092,7 +1090,7 @@ const IDEOLOGIAS = [
     label: 'Socialismo autoritario',
     color: '#C0392B',
     desc: 'Estado poderoso con proyecto redistributivo y homogeneizador económico. Incluye desde el socialismo real soviético hasta variantes latinoamericanas como Venezuela o Cuba. IAE alto, IUE negativo.',
-    zone: '190,340 80,520 264,520 264,340',
+    zone: '216,248 134,400 254,400 282,248',
     iaeRange: '55–90', iueRange: '−90 a −40',
     filter: 'autoritario',
   },
@@ -1101,7 +1099,7 @@ const IDEOLOGIAS = [
     label: 'Autoritarismo pragmático',
     color: '#5C5C5C',
     desc: 'Estado poderoso sin proyecto ideológico claro. El control como fin en sí mismo. Incluye regímenes militares latinoamericanos de los 70, Bielorrusia, Kazajistán.',
-    zone: '264,340 264,520 436,520 436,340',
+    zone: '282,248 418,248 446,400 254,400',
     iaeRange: '55–85', iueRange: '−35 a +35',
     filter: 'autoritario',
   },
@@ -1110,7 +1108,7 @@ const IDEOLOGIAS = [
     label: 'Nacionalismo autoritario',
     color: '#8B3A1A',
     desc: 'Estado poderoso con proyecto identitario-nacionalista. Incluye el fascismo histórico, teocracias, y variantes contemporáneas como Irán o la Rusia de Putin. IAE alto, IUE positivo.',
-    zone: '436,340 436,520 620,520 480,260',
+    zone: '418,248 484,248 566,400 446,400',
     iaeRange: '50–90', iueRange: '+35 a +90',
     filter: 'autoritario',
   },
@@ -1506,48 +1504,87 @@ function initHeroTriangle() {
   if (!container) return;
 
   container.innerHTML = `
-  <svg viewBox="0 0 420 400" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <svg viewBox="0 0 520 465" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
     <defs>
-      <radialGradient id="heroGrad" cx="50%" cy="40%" r="60%">
-        <stop offset="0%" stop-color="#E8E4DA" stop-opacity="1"/>
-        <stop offset="100%" stop-color="#D4CFBF" stop-opacity="1"/>
-      </radialGradient>
+      <linearGradient id="hGradLeft" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#4A90D9" stop-opacity="0.20"/>
+        <stop offset="100%" stop-color="#4A90D9" stop-opacity="0"/>
+      </linearGradient>
+      <linearGradient id="hGradRight" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#8B1A1A" stop-opacity="0"/>
+        <stop offset="100%" stop-color="#8B1A1A" stop-opacity="0.22"/>
+      </linearGradient>
+      <linearGradient id="iueBarGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#A8A7A2"/>
+        <stop offset="50%" stop-color="#E8E5DF"/>
+        <stop offset="100%" stop-color="#C0392B"/>
+      </linearGradient>
+      <linearGradient id="iaeBarGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#4A90D9"/>
+        <stop offset="100%" stop-color="#5E3FA0"/>
+      </linearGradient>
     </defs>
-    <polygon points="210,30 40,370 380,370"
-      fill="url(#heroGrad)" stroke="#C8C5BC" stroke-width="1.5"/>
-    <polygon points="210,30 40,370 125,370 155,220"
-      fill="#4A90D9" fill-opacity="0.08"/>
-    <polygon points="210,30 380,370 295,370 265,220"
-      fill="#8B1A1A" fill-opacity="0.08"/>
-    <polygon points="125,370 295,370 210,200"
-      fill="#555" fill-opacity="0.06"/>
-    <line x1="210" y1="30" x2="210" y2="370" stroke="#C8C5BC" stroke-width="0.5" stroke-dasharray="3 4"/>
-    <line x1="125" y1="200" x2="295" y2="200" stroke="#C8C5BC" stroke-width="0.5" stroke-dasharray="3 4"/>
-    <circle cx="210" cy="30" r="5" fill="#4A90D9"/>
-    <circle cx="40" cy="370" r="5" fill="#C0392B"/>
-    <circle cx="380" cy="370" r="5" fill="#8B1A1A"/>
-    <text x="210" y="18" text-anchor="middle"
-      font-family="DM Sans, sans-serif" font-size="11" fill="#6B6A65">Anarquía</text>
-    <text x="20" y="388" text-anchor="start"
-      font-family="DM Sans, sans-serif" font-size="11" fill="#6B6A65">Comunismo</text>
-    <text x="400" y="388" text-anchor="end"
-      font-family="DM Sans, sans-serif" font-size="11" fill="#6B6A65">Fascismo</text>
-    <text x="210" y="145" text-anchor="middle"
-      font-family="DM Sans, sans-serif" font-size="10" fill="#A8A7A2" letter-spacing="0.06em">LIBERALISMO</text>
-    <text x="210" y="290" text-anchor="middle"
-      font-family="DM Sans, sans-serif" font-size="10" fill="#A8A7A2" letter-spacing="0.06em">INTERVENCIONISMO</text>
-    <circle cx="210" cy="145" r="6" fill="#1B5C9E" fill-opacity="0.8"/>
-    <text x="222" y="149" font-family="DM Sans, sans-serif" font-size="9" fill="#3D3C38">Noruega</text>
-    <circle cx="196" cy="185" r="6" fill="#2874A6" fill-opacity="0.8"/>
-    <text x="208" y="189" font-family="DM Sans, sans-serif" font-size="9" fill="#3D3C38">EE.UU.</text>
-    <circle cx="225" cy="268" r="6" fill="#C0392B" fill-opacity="0.8"/>
-    <text x="237" y="272" font-family="DM Sans, sans-serif" font-size="9" fill="#3D3C38">China</text>
-    <circle cx="138" cy="290" r="6" fill="#E07B20" fill-opacity="0.8"/>
-    <text x="150" y="294" font-family="DM Sans, sans-serif" font-size="9" fill="#3D3C38">Venezuela</text>
-    <text x="65" y="358" text-anchor="middle"
-      font-family="DM Sans, sans-serif" font-size="9" fill="#A8A7A2">← Progresista</text>
-    <text x="355" y="358" text-anchor="middle"
-      font-family="DM Sans, sans-serif" font-size="9" fill="#A8A7A2">Conservador →</text>
+
+    <!-- Eje IAE (izquierda) -->
+    <text x="36" y="38" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#6B6A65">IAE=0</text>
+    <text x="36" y="390" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#6B6A65">IAE=100</text>
+    <rect x="44" y="34" width="5" height="354" fill="url(#iaeBarGrad)" rx="2.5"/>
+    <text x="22" y="215" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#A8A7A2" transform="rotate(-90,22,215)">Índice de Alcance Estatal</text>
+
+    <!-- Triángulo base -->
+    <polygon points="270,34 80,388 460,388" fill="#F0EDE6" stroke="#C8C5BC" stroke-width="1.5"/>
+    <!-- Gradientes izquierda/derecha -->
+    <polygon points="270,34 80,388 460,388" fill="url(#hGradLeft)"/>
+    <polygon points="270,34 80,388 460,388" fill="url(#hGradRight)"/>
+
+    <!-- Zona democrática — diamante con vértices lat. en perímetro -->
+    <polygon points="270,130 210,210 270,290 330,210"
+      fill="rgba(74,144,217,0.07)" stroke="rgba(74,144,217,0.40)"
+      stroke-width="1" stroke-dasharray="5 3"/>
+
+    <!-- Labels internos -->
+    <text x="270" y="104" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#A8A7A2" letter-spacing="0.07em">LIBERALISMO</text>
+    <text x="270" y="330" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#A8A7A2" letter-spacing="0.07em">INTERVENCIONISMO</text>
+    <text x="270" y="240" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="rgba(74,144,217,0.75)">Zona de Estados Democráticos</text>
+
+    <!-- Izquierda / Derecha labels -->
+    <text x="195" y="214" text-anchor="end" font-family="DM Sans,sans-serif" font-size="9" fill="#6B6A65">Izquierda</text>
+    <text x="345" y="214" text-anchor="start" font-family="DM Sans,sans-serif" font-size="9" fill="#6B6A65">Derecha</text>
+
+    <!-- Puntos de muestra -->
+    <circle cx="255" cy="137" r="5" fill="#1B5C9E" fill-opacity="0.9"/>
+    <text x="263" y="141" font-family="DM Sans,sans-serif" font-size="8.5" fill="#3D3C38">Noruega</text>
+    <circle cx="272" cy="160" r="5" fill="#2874A6" fill-opacity="0.9"/>
+    <text x="280" y="164" font-family="DM Sans,sans-serif" font-size="8.5" fill="#3D3C38">EE.UU.</text>
+    <circle cx="253" cy="234" r="5" fill="#C0392B" fill-opacity="0.9"/>
+    <text x="261" y="238" font-family="DM Sans,sans-serif" font-size="8.5" fill="#3D3C38">China</text>
+    <circle cx="196" cy="268" r="5" fill="#E07B20" fill-opacity="0.9"/>
+    <text x="204" y="272" font-family="DM Sans,sans-serif" font-size="8.5" fill="#3D3C38">Venezuela</text>
+
+    <!-- Vértices -->
+    <circle cx="270" cy="34"  r="6" fill="#4A90D9"/>
+    <circle cx="80"  cy="388" r="6" fill="#888"/>
+    <circle cx="460" cy="388" r="6" fill="#8B1A1A"/>
+
+    <!-- Caja Anarquía -->
+    <rect x="198" y="10" width="144" height="20" rx="5" fill="#4A90D9"/>
+    <text x="270" y="24" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="white" font-weight="600">Anarquía · IAE=0 · IUE=0</text>
+
+    <!-- Caja Comunismo -->
+    <rect x="56" y="396" width="118" height="20" rx="5" fill="#888"/>
+    <text x="115" y="410" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8.5" fill="white" font-weight="600">Comunismo · IAE=100</text>
+
+    <!-- Caja Fascismo/Teocracia -->
+    <rect x="364" y="396" width="126" height="20" rx="5" fill="#8B1A1A"/>
+    <text x="427" y="410" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8.5" fill="white" font-weight="600">Fascismo · IAE=100</text>
+
+    <!-- Eje IUE inferior con barra de gradiente -->
+    <rect x="80" y="428" width="380" height="7" fill="url(#iueBarGrad)" rx="3.5"/>
+    <text x="80"  y="444" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#6B6A65">IUE=−100</text>
+    <text x="270" y="444" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#6B6A65">IUE=0</text>
+    <text x="460" y="444" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#6B6A65">IUE=+100</text>
+    <text x="80"  y="458" text-anchor="start"  font-family="DM Sans,sans-serif" font-size="7.5" fill="#A8A7A2">← Polo Progresista Universalista</text>
+    <text x="460" y="458" text-anchor="end"    font-family="DM Sans,sans-serif" font-size="7.5" fill="#A8A7A2">Polo Conservador Particularista →</text>
   </svg>`;
 }
 
@@ -1569,8 +1606,9 @@ function initHeroExplainer() {
       <text x="190" y="82" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#A8A7A2">IUE = 0</text>
       <line x1="190" y1="88" x2="190" y2="94" stroke="#C8C5BC" stroke-width="1"/>
       <circle cx="240" cy="100" r="8" fill="#E07B20" stroke="white" stroke-width="2"/>
-      <text x="240" y="68" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#6B6A65">régimen X</text>
-      <text x="240" y="78" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#A8A7A2">¿pero cuánto poder tiene?</text>
+      <line x1="240" y1="90" x2="258" y2="72" stroke="#A8A7A2" stroke-width="0.8"/>
+      <text x="266" y="62" text-anchor="start" font-family="DM Sans,sans-serif" font-size="10" fill="#6B6A65">régimen X</text>
+      <text x="266" y="74" text-anchor="start" font-family="DM Sans,sans-serif" font-size="9" fill="#A8A7A2">¿pero cuánto poder tiene?</text>
       <text x="190" y="160" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#A8A7A2" letter-spacing="0.06em">EJE IUE — dirección del Estado</text>
     </svg>`,
 
@@ -1582,10 +1620,10 @@ function initHeroExplainer() {
       <circle cx="340" cy="190" r="5" fill="#8B1A1A"/>
       <text x="40" y="208" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#6B6A65">IUE=−100</text>
       <text x="340" y="208" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#6B6A65">IUE=+100</text>
-      <text x="174" y="26" text-anchor="end" font-family="DM Sans,sans-serif" font-size="10" fill="#1B5C9E">IAE=100</text>
-      <text x="174" y="194" text-anchor="end" font-family="DM Sans,sans-serif" font-size="10" fill="#1B5C9E">IAE=0</text>
-      <rect x="160" y="105" width="60" height="14" rx="3" fill="#1B5C9E" fill-opacity="0.1"/>
-      <text x="175" y="115" text-anchor="end" font-family="DM Sans,sans-serif" font-size="9" fill="#1B5C9E">IAE</text>
+      <text x="174" y="26" text-anchor="end" font-family="DM Sans,sans-serif" font-size="10" fill="#1B5C9E">IAE=0</text>
+      <text x="174" y="194" text-anchor="end" font-family="DM Sans,sans-serif" font-size="10" fill="#1B5C9E">IAE=100</text>
+      <line x1="183" y1="107" x2="190" y2="107" stroke="#1B5C9E" stroke-width="0.8"/>
+      <text x="172" y="111" text-anchor="end" font-family="DM Sans,sans-serif" font-size="9" fill="#1B5C9E">IAE=50</text>
       <circle cx="240" cy="110" r="8" fill="#E07B20" stroke="white" stroke-width="2"/>
       <text x="252" y="107" font-family="DM Sans,sans-serif" font-size="10" fill="#6B6A65">régimen X</text>
       <text x="190" y="228" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#A8A7A2" letter-spacing="0.06em">IAE (alcance) + IUE (dirección)</text>

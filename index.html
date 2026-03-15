@@ -156,10 +156,10 @@
 
         <!-- Zona democrática IAE 25-55 -->
         <polygon
-          points="320,143 265,251 320,359 375,251"
+          points="320,143 232,208 320,273 408,208"
           fill="rgba(74,144,217,0.06)" stroke="rgba(74,144,217,0.30)"
           stroke-width="1" stroke-dasharray="5 4"/>
-        <text x="320" y="256" text-anchor="middle"
+        <text x="320" y="225" text-anchor="middle"
               font-family="DM Sans,sans-serif" font-size="9"
               fill="rgba(74,144,217,0.55)" letter-spacing="0.04em">Zona democrática</text>
 
@@ -461,6 +461,15 @@
 
     <div class="indices-grid">
 
+      <!-- ── Fuerzas estructurales ── -->
+      <div class="fuerzas-subsection-header">
+        <h3 class="fuerzas-subheading">Fuerzas estructurales</h3>
+        <p class="fuerzas-subtext">
+          Son presiones de fondo que operan <em>independientemente</em> del gobierno de turno.
+          Definen la dirección natural de desplazamiento del régimen en el triángulo, con o sin intervención de liderazgos o crisis puntuales.
+        </p>
+      </div>
+
       <article class="index-card" data-index="if1">
         <div class="card-icon" style="background:var(--c-iae-bg)">IF1</div>
         <h3>Expansión Estatal</h3>
@@ -506,6 +515,15 @@
         <button class="card-toggle">Ver más ↓</button>
       </article>
 
+      <!-- ── Catalizadores ── -->
+      <div class="fuerzas-subsection-header fuerzas-subsection-border">
+        <h3 class="fuerzas-subheading">Catalizadores</h3>
+        <p class="fuerzas-subtext">
+          Aceleran o invierten las fuerzas en marcha, pero no crean dirección por sí solos.
+          Un catalizador en un sistema sin fuerzas estructurales activas no produce cambio estructural duradero.
+        </p>
+      </div>
+
       <article class="index-card" data-index="ic1">
         <div class="card-icon" style="background:var(--c-ivr-bg)">IC1</div>
         <h3>Liderazgo Personalizado</h3>
@@ -550,6 +568,15 @@
         </div>
         <button class="card-toggle">Ver más ↓</button>
       </article>
+
+      <!-- ── Inhibidores ── -->
+      <div class="fuerzas-subsection-header fuerzas-subsection-border">
+        <h3 class="fuerzas-subheading">Inhibidores</h3>
+        <p class="fuerzas-subtext">
+          Frenan el cambio estructural al elevar el costo político de violar las normas establecidas.
+          A diferencia de los catalizadores, su función es <em>resistir</em> el desplazamiento — no acelerarlo.
+        </p>
+      </div>
 
       <article class="index-card" data-index="ii1">
         <div class="card-icon" style="background:var(--c-iaee-bg)">II1</div>
@@ -678,16 +705,16 @@
           <!-- Triángulo principal -->
           <polygon points="350,40 80,520 620,520"
             fill="var(--bg-triangle)" stroke="var(--border-main)" stroke-width="1.5"/>
-          <!-- Zona de estados democráticos: diamante IAE 25–55, IUE ±55 -->
+          <!-- Zona de estados democráticos: diamante con vértices lat. en perímetro -->
           <polygon id="zonaDemocratica"
-            points="350,160 291,232 350,304 409,232"
+            points="350,160 242,232 350,304 458,232"
             fill="rgba(74,144,217,0.06)" stroke="rgba(74,144,217,0.25)"
             stroke-width="1" stroke-dasharray="5 4"/>
           <!-- Etiquetas de zona -->
           <text class="zone-label" x="350" y="170" text-anchor="middle">Liberalismo</text>
           <text class="zone-label" x="350" y="390" text-anchor="middle">Intervencionismo</text>
           <text style="font-family:var(--font-body);font-size:10px;fill:rgba(74,144,217,0.6);letter-spacing:0.05em"
-            x="350" y="280" text-anchor="middle">— Zona democrática —</text>
+            x="350" y="260" text-anchor="middle">— Zona democrática —</text>
           <!-- Vértices -->
           <circle cx="350" cy="40"  r="5" fill="var(--c-anarquia)"/>
           <circle cx="80"  cy="520" r="5" fill="var(--c-comunismo)"/>
