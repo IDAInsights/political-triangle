@@ -1537,9 +1537,9 @@ function initHeroTriangle() {
       stroke-width="1" stroke-dasharray="5 3"/>
 
     <!-- Labels internos -->
-    <text x="270" y="130" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#A8A7A2" letter-spacing="0.07em">LIBERALISMO</text>
-    <text x="270" y="310" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#A8A7A2" letter-spacing="0.07em">INTERVENCIONISMO</text>
-    <text x="270" y="210" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="rgba(74,144,217,0.75)">Zona de Estados Democráticos</text>
+    <text x="270" y="110" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#A8A7A2" letter-spacing="0.07em">LIBERALISMO</text>
+    <text x="270" y="330" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#A8A7A2" letter-spacing="0.07em">INTERVENCIONISMO</text>
+    <text x="270" y="214" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="rgba(74,144,217,0.75)">Zona de Estados Democráticos</text>
 
     <!-- Izquierda / Derecha labels -->
     <text x="165" y="214" text-anchor="end" font-family="DM Sans,sans-serif" font-size="9" fill="#6B6A65">Izquierda</text>
@@ -1561,16 +1561,16 @@ function initHeroTriangle() {
     <circle cx="460" cy="388" r="6" fill="#8B1A1A"/>
 
     <!-- Caja Anarquía -->
-    <rect x="228" y="10" width="88" height="20" rx="5" fill="#4A90D9"/>
-    <text x="270" y="24" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="white" font-weight="600">Anarquía</text>
+    <rect x="226" y="8" width="88" height="20" rx="5" fill="#4A90D9"/>
+    <text x="270" y="20" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="white" font-weight="600">Anarquía</text>
 
     <!-- Caja Comunismo -->
-    <rect x="86" y="396" width="88" height="20" rx="5" fill="#888"/>
-    <text x="115" y="410" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8.5" fill="white" font-weight="600">Comunismo</text>
+    <rect x="66" y="396" width="88" height="20" rx="5" fill="#888"/>
+    <text x="74" y="410" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8.5" fill="white" font-weight="600">Comunismo</text>
 
     <!-- Caja Fascismo/Teocracia -->
-    <rect x="394" y="396" width="88" height="20" rx="5" fill="#8B1A1A"/>
-    <text x="427" y="410" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8.5" fill="white" font-weight="600">Fascismo</text>
+    <rect x="414" y="396" width="88" height="20" rx="5" fill="#8B1A1A"/>
+    <text x="447" y="410" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8.5" fill="white" font-weight="600">Fascismo</text>
 
   </svg>`;
 }
