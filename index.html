@@ -322,7 +322,7 @@
         </div>
         <div class="card-technical" hidden>
           <code>IAEc_efectivo = IAEc_formal × (1 − FTE)</code>
-          <p>FTE = Fragmentación Territorial Efectiva. Corrector máximo 0.80. El ecosistema informacional pesa 30% del IAEc.</p>
+          <p>IAEc_formal = Freedom House Civil Liberties (30%, escala invertida) + WJP Rule of Law Index (25%, invertido) + Ecosistema informacional (30%: RSF×0.5 + captura indirecta×0.3 + manipulación digital×0.2) + control FF.AA. con criterios observables (15%). FTE máximo = 0.80.</p>
         </div>
         <button class="card-toggle">Ver más ↓</button>
       </article>
@@ -340,7 +340,7 @@
         </div>
         <div class="card-technical" hidden>
           <code>IAEe_efectivo = IAEe_formal × (1 − CE × 0.30)</code>
-          <p>CE = Corrector de Captura por Élites. Reduce el IAEe hasta 30%. Hiperinflación aplica corrector adicional.</p>
+          <p>IAEe_formal = FMI WEO Gasto/PIB (35%) + Fraser EFW Tax Burden invertido (25%) + Fraser EFW Labor Market invertido (20%) + sector público empresarial con criterios observables (20%). CE = Corrector de Captura por Élites (puerta giratoria, contratos sin licitación, HHI sectorial, financiamiento electoral). Hiperinflación &gt;100% anual aplica corrector adicional: <code>IAEe_ef = IAEe_formal × (1 − min(inflación/800, 0.95))</code>.</p>
         </div>
         <button class="card-toggle">Ver más ↓</button>
       </article>
@@ -392,8 +392,8 @@
           <p>La distinción izquierda/derecha clásica mezcla dirección con alcance. Un Estado puede ser muy intervencionista (alto IAE) y orientado hacia derechos universales (IUE negativo), como Suecia, o igualmente intervencionista pero orientado a privilegiar una identidad nacional particular (IUE positivo), como la Alemania nazi. El IUE separa esa dimensión.</p>
         </div>
         <div class="card-technical" hidden>
-          <code>IUE = Σ (componente_i × peso_i)</code>
-          <p>IUE = 0: centro pragmático. IUE = +100: polo particularista-conservador. Mide uso efectivo observable, no retórica.</p>
+          <code>IUE = Σ (componente_i × peso_i); IUE_comp = (estimación_0–100 − 50) × 2</code>
+          <p>5 componentes: retórica oficial (15%), política redistributiva vs. identitaria (20%), marco legal de identidad colectiva (20%), composición de coalición gobernante (25%), política exterior y alianzas (20%). Fuentes: análisis de discurso con tabla de calibración 2.3a, OCDE/BM, V-Dem, CEPII. Mide uso efectivo observable, no retórica de campaña. <em class="iue-bias-note">Nota metodológica: el eje embebe un sesgo liberal-ilustrado en la distinción universalista/particularista. No es filosóficamente neutro, pero captura una variación empíricamente observable y políticamente relevante. El modelo lo declara explícitamente.</em></p>
         </div>
         <button class="card-toggle">Ver más ↓</button>
       </article>
@@ -428,8 +428,9 @@
           <p>La mayoría de los índices políticos describen dónde está un régimen hoy. El IVR intenta responder: ¿hacia dónde va? Un liderazgo carismático puede acelerar la trayectoria; instituciones consolidadas la frenan. Una crisis económica puede invertir la dirección por completo.</p>
         </div>
         <div class="card-technical" hidden>
-          <code>Velocidad_IVR × (1 + IC1/100) × (1 − II1/100)</code>
-          <p>IC1 (liderazgo) acelera; II1 (legitimidad institucional) frena. IC2 (crisis/bonanza) activa o invierte fuerzas.</p>
+          <code>Vel_civil = IVR₁_civil × (1+IC1/100) × (1+IC2/100) × (1−II1/100) × Factor_II2</code>
+          <code>IVR_horizontal = IF3 × signo(IF3_dir) × Factor_amort_cultural <span class="provisional-tag">prov.</span></code>
+          <p>IC1 (liderazgo personal) acelera. II1 (legitimidad institucional) frena. IC2 (crisis/bonanza) activa o invierte fuerzas con efectos diferenciados civil/económico. Factor_amortiguación_cultural = (1 − (II1/100 × II2b/100) × 0.60): corrige sobreestimación del IVR_horizontal detectada en validación retrospectiva. El coeficiente 0.60 es <strong>provisional</strong> — rango de calibración: 0.40–0.80. Tres horizontes: IVR₁ (1–3 años), IVR₅ (5–10), IVR₂₀ (15–30).</p>
         </div>
         <button class="card-toggle">Ver más ↓</button>
       </article>
@@ -444,7 +445,9 @@
       <h2>Regímenes en el triángulo</h2>
       <p class="section-desc">
         Estos casos son ilustrativos del modelo, no diagnósticos definitivos.
-        Los valores son aproximados para fines didácticos.
+        Los valores fueron estimados aplicando el Codebook V3.2 sobre Freedom House, WJP Rule of Law,
+        Fraser Economic Freedom of the World, FMI WEO y V-Dem. Para análisis riguroso,
+        cada caso requiere la ficha completa de cálculo con fuentes explícitas y nivel RSA.
       </p>
     </div>
 
@@ -598,6 +601,18 @@
         </p>
       </div>
 
+      <div class="met-block">
+        <h3>Sesgo declarado del eje IUE</h3>
+        <p>
+          El eje universalista/particularista <strong>no es filosóficamente neutro</strong>: embebe
+          una distinción de origen liberal-ilustrado. La defensa metodológica es que captura
+          una variación empíricamente observable y políticamente relevante, no que sea
+          aséptico. El modelo lo declara explícitamente para que el analista pueda ponderarlo.
+          El IUE mide uso efectivo observable del aparato estatal, no declaraciones retóricas ni
+          simpatías del analista.
+        </p>
+      </div>
+
       <div class="met-block met-block-wide">
         <h3>⚑ Protocolo para casos con violencia extrema</h3>
         <p>
@@ -632,6 +647,30 @@
         </ul>
       </div>
 
+      <div class="met-block">
+        <h3>Parámetros provisionales</h3>
+        <p>El modelo central está calibrado. Los siguientes parámetros tienen respaldo empírico parcial
+        y están sujetos a revisión en la próxima validación:</p>
+        <ul class="met-list met-list-prov">
+          <li><strong>Coeficiente de amortiguación cultural (0.60)</strong> — rango de calibración: 0.40–0.80</li>
+          <li><strong>Parámetro de saturación en colapsos (80)</strong> — calibrado sobre Polonia 1989 y Alemania 1932; pendiente 3–5 casos adicionales</li>
+          <li><strong>Corrector de brecha retórica (0.25)</strong> — pendiente calibración sobre Argentina 2015, Turquía 2002 y Francia 2017</li>
+          <li><strong>Pesos de IF2c e IF2e</strong> — pendiente calibración sobre Nueva Zelanda 1984–93, Argentina 2015–19 y España 1975–82</li>
+          <li><strong>Redistribución de pesos en II2b</strong> — pendiente muestra completa de 50–100 casos</li>
+        </ul>
+      </div>
+
+      <div class="met-block">
+        <h3>Hoja de ruta hacia V3.5</h3>
+        <ul class="met-list met-list-ok">
+          <li>Extender criterios observables a componentes cualitativos remanentes (cultura de autonomía, política exterior, IF3_shock)</li>
+          <li>Calibrar parámetros provisionales sobre muestra ampliada de 50–100 casos históricos</li>
+          <li>Evaluar incorporación del Índice Tecnológico (IT) al modelo central si reduce error sistemático</li>
+          <li>Desarrollar software de cálculo automatizado con entrada de datos estructurada</li>
+          <li>Publicación académica con comparación sistemática V2.7 / V3.0 / V3.2</li>
+        </ul>
+      </div>
+
       <div class="met-block met-block-codebook">
         <h3>Codebook V3.2</h3>
         <p>Documentación técnica completa del modelo, incluyendo tablas de calibración,
@@ -643,28 +682,32 @@
           <div class="codebook-item">
             <span class="codebook-item-label">Ponderación IAE</span>
             <code>IAE = (IAEc × 0.50) + (IAEe × 0.50)</code>
-            <p>Test de sensibilidad con 60/40 y 40/60 produjo variación &lt; 4 puntos en todos los casos de validación.</p>
+            <p>Test de sensibilidad con 60/40 y 40/60 produjo variación &lt; 4 puntos en todos los casos de validación. Fuentes IAEc: Freedom House, WJP Rule of Law, RSF. Fuentes IAEe: FMI WEO, Fraser Economic Freedom of the World.</p>
           </div>
           <div class="codebook-item">
             <span class="codebook-item-label">Corrector FTE (Fragmentación Territorial)</span>
             <code>IAEc_ef = IAEc_formal × (1 − FTE)</code>
-            <p>FTE máximo aplicable: 0.80. El ecosistema informacional pesa 30% del IAEc.</p>
+            <p>FTE máximo aplicable: 0.80. El ecosistema informacional pesa 30% del IAEc. Indicadores: actores armados con control territorial &gt;5%, zonas sin servicios básicos &gt;10% población, conflicto armado activo &gt;1.000 muertes/año, gobierno paralelo, incapacidad de ejecutar órdenes judiciales.</p>
           </div>
           <div class="codebook-item">
             <span class="codebook-item-label">Corrector de Captura por Élites</span>
             <code>IAEe_ef = IAEe_formal × (1 − CE × 0.30)</code>
-            <p>CE reduce el IAEe hasta 30%. Hiperinflación sostenida aplica corrector adicional de hasta 15%.</p>
+            <p>CE reduce el IAEe hasta 30%. Indicadores: puerta giratoria &gt;30% funcionarios reguladores, contratos sin licitación &gt;25%, HHI &gt;0.25 en &gt;3 sectores estratégicos, financiamiento electoral documentado. Hiperinflación &gt;100% anual: corrector adicional <code>× (1 − min(inflación/800, 0.95))</code>. Denominador 800 calibrado sobre Venezuela 2019, Zimbabwe 2008 y Argentina 1989.</p>
           </div>
           <div class="codebook-item">
             <span class="codebook-item-label">Índice de Vector Resultante</span>
             <code>IVR = Velocidad × (1 + IC1/100) × (1 − II1/100)</code>
-            <p>IC1 (liderazgo personal) acelera la trayectoria. II1 (legitimidad institucional) la frena. IC2 (crisis/bonanza) puede invertir la dirección.</p>
+            <p>IC1 (liderazgo personal) acelera la trayectoria. II1 (legitimidad institucional) la frena. IC2 (crisis/bonanza) puede invertir la dirección con efectos diferenciados: bonanza amplifica IF1e pero frena Vel_civil (corrige error Venezuela 2005). Factor_amortiguación_cultural = (1 − II1/100 × II2b/100) × <strong>0.60 (provisional)</strong>: corrige sobreestimación del IVR_horizontal en todos los casos de validación.</p>
           </div>
           <div class="codebook-item">
             <span class="codebook-item-label">Zona democrática</span>
-            <p>IAE entre 20 y 65 con pluralismo político real verificado. El umbral de 65 está calibrado sobre 47 casos históricos con alternancia documentada.</p>
+            <p>IAE entre 20 y 65 con pluralismo político real verificado. El umbral de 65 está calibrado sobre 47 casos históricos con alternancia documentada. Zona de alta heterogeneidad interna: posición similar no implica equivalencia sustantiva ni trayectoria compartida. Complementar siempre con IVR y ficha completa.</p>
           </div>
-          <p class="codebook-note">La documentación completa (incluyendo tablas de calibración y apéndice experimental) estará disponible próximamente.</p>
+          <div class="codebook-item">
+            <span class="codebook-item-label">Casos de validación retrospectiva</span>
+            <p>Colapsos democráticos: Alemania 1928–33 ✓, Chile 1970–73 ✓, Venezuela 1998–2020 ✓. Transiciones: Polonia 1989 ✓, Chile 1988–95 ✓. Liberalizaciones: Nueva Zelanda 1984–93 ✓, India 1991–2000 ✓. Expansiones: Suecia 1950–80 ✓. Equilibrios estables: Singapur 1965–2020 ✓. Derivas iliberales: Hungría 2010–24 ✓. Pendientes: España 1931–39, Sudáfrica 1990–94, Estonia 1991–2000, China 1978–2020.</p>
+          </div>
+          <p class="codebook-note">La documentación completa —incluyendo tablas de calibración, fórmulas del IVR₅ e IVR₂₀, protocolo de violaciones graves y apéndice de componentes experimentales (IT, CE_supranacional, IC1_post)— está en el Codebook V3.2. La hoja de ruta hacia V3.5 incluye publicación académica con comparación V2.7/V3.0/V3.2.</p>
         </div>
       </div>
 

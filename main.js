@@ -806,6 +806,21 @@ function updatePositionPanel() {
   iueeEl.textContent = iuee;
   zoneEl.textContent = calcZone(state.iae, state.iue);
 
+  // Nota de zona democrática (alta heterogeneidad interna)
+  let zonaNoteEl = document.getElementById('posZoneNote');
+  if (!zonaNoteEl) {
+    zonaNoteEl = document.createElement('p');
+    zonaNoteEl.id = 'posZoneNote';
+    zonaNoteEl.className = 'pos-zone-note';
+    zoneEl.parentElement.insertAdjacentElement('afterend', zonaNoteEl);
+  }
+  if (state.iae >= 20 && state.iae <= 65) {
+    zonaNoteEl.textContent = 'Zona de alta heterogeneidad: dos regímenes próximos aquí pueden diferir en mecanismo de sostenimiento, IUE_tipo y trayectoria futura. Complementar con el IVR.';
+    zonaNoteEl.hidden = false;
+  } else {
+    zonaNoteEl.hidden = true;
+  }
+
   // Expert panel: fórmulas, sensibilidad, confianza
   const expertPanel = document.getElementById('posExpertPanel');
   if (expertPanel) {
@@ -1380,26 +1395,28 @@ function initHeroExplainer() {
 ══════════════════════════════════════════════════ */
 
 const QUIZ_QUESTIONS = [
-  { text: "El Estado debería garantizar educación gratuita y de calidad para toda la población.", axis: "IAE", dir: 1 },
-  { text: "Las empresas estratégicas (energía, agua, transporte) deberían estar en manos del Estado.", axis: "IAE", dir: 1 },
-  { text: "El Estado tiene derecho a limitar la libre circulación de personas en situaciones de emergencia.", axis: "IAE", dir: 1 },
-  { text: "El Estado debería regular el acceso a las redes sociales y los medios de comunicación.", axis: "IAE", dir: 1 },
+  // subaxis: 'IAEc' = alcance civil (libertades, prensa, seguridad)
+  //          'IAEe' = alcance económico (gasto, empresas, mercado)
+  { text: "El Estado debería garantizar educación gratuita y de calidad para toda la población.", axis: "IAE", subaxis: "IAEe", dir: 1 },
+  { text: "Las empresas estratégicas (energía, agua, transporte) deberían estar en manos del Estado.", axis: "IAE", subaxis: "IAEe", dir: 1 },
+  { text: "El Estado tiene derecho a limitar la libre circulación de personas en situaciones de emergencia.", axis: "IAE", subaxis: "IAEc", dir: 1 },
+  { text: "El Estado debería regular el acceso a las redes sociales y los medios de comunicación.", axis: "IAE", subaxis: "IAEc", dir: 1 },
   { text: "El Estado debería redistribuir activamente la riqueza a través de impuestos progresivos.", axis: "IUE", dir: -1 },
   { text: "Las leyes deberían reflejar los valores y tradiciones culturales de la mayoría.", axis: "IUE", dir: 1 },
   { text: "El Estado debería financiar y promover activamente la igualdad de género y derechos LGBTQ+.", axis: "IUE", dir: -1 },
   { text: "La inmigración debería limitarse para preservar la identidad cultural nacional.", axis: "IUE", dir: 1 },
-  { text: "El Estado debería proveer un seguro de desempleo universal y generoso.", axis: "IAE", dir: 1 },
+  { text: "El Estado debería proveer un seguro de desempleo universal y generoso.", axis: "IAE", subaxis: "IAEe", dir: 1 },
   { text: "Las instituciones religiosas deberían tener influencia en las decisiones del Estado.", axis: "IUE", dir: 1 },
-  { text: "La propiedad privada es un derecho fundamental que el Estado no debe restringir.", axis: "IAE", dir: -1 },
+  { text: "La propiedad privada es un derecho fundamental que el Estado no debe restringir.", axis: "IAE", subaxis: "IAEe", dir: -1 },
   { text: "El Estado debería garantizar un salario mínimo que permita vivir dignamente.", axis: "IUE", dir: -1 },
-  { text: "Las fuerzas de seguridad necesitan más recursos y autonomía para combatir el crimen.", axis: "IAE", dir: 1 },
+  { text: "Las fuerzas de seguridad necesitan más recursos y autonomía para combatir el crimen.", axis: "IAE", subaxis: "IAEc", dir: 1 },
   { text: "El Estado debería subsidiar las artes, la cultura y los medios públicos.", axis: "IUE", dir: -1 },
   { text: "El aborto debería estar prohibido o fuertemente restringido por ley.", axis: "IUE", dir: 1 },
-  { text: "La libre competencia del mercado es el mejor mecanismo para asignar recursos.", axis: "IAE", dir: -1 },
-  { text: "El Estado debería tener un sistema de salud pública universal.", axis: "IAE", dir: 1 },
+  { text: "La libre competencia del mercado es el mejor mecanismo para asignar recursos.", axis: "IAE", subaxis: "IAEe", dir: -1 },
+  { text: "El Estado debería tener un sistema de salud pública universal.", axis: "IAE", subaxis: "IAEe", dir: 1 },
   { text: "La tradición y los valores familiares deben ser protegidos activamente por el Estado.", axis: "IUE", dir: 1 },
   { text: "El Estado debería reducir las desigualdades regionales mediante transferencias y subsidios.", axis: "IUE", dir: -1 },
-  { text: "Los ciudadanos deberían poder armarse para su propia defensa sin necesidad de permiso estatal.", axis: "IAE", dir: -1 },
+  { text: "Los ciudadanos deberían poder armarse para su propia defensa sin necesidad de permiso estatal.", axis: "IAE", subaxis: "IAEc", dir: -1 },
 ];
 
 const QUIZ_LABELS = [
@@ -1442,17 +1459,32 @@ function quizToXY(iae, iue) {
 
 function quizCalcScores() {
   let iaeSum = 0, iaeN = 0, iueSum = 0, iueN = 0;
+  // Sub-tracking para desglose en resultado
+  let iaecSum = 0, iaecN = 0, iaeeSum = 0, iaeeN = 0;
+
   QUIZ_QUESTIONS.forEach((q, i) => {
     if (quizState.answers[i] === null) return;
     const norm = quizState.answers[i] - 3;
     const score = norm * q.dir * 25;
-    if (q.axis === "IAE") { iaeSum += score; iaeN++; }
-    else                  { iueSum += score; iueN++; }
+    if (q.axis === "IAE") {
+      iaeSum += score; iaeN++;
+      // Las preguntas de IAE civil (libertades, seguridad) vs económico (empresas, impuestos)
+      if (q.subaxis === 'IAEc') { iaecSum += score; iaecN++; }
+      else                      { iaeeSum += score; iaeeN++; }
+    } else {
+      iueSum += score; iueN++;
+    }
   });
+
   const iae  = Math.max(0,    Math.min(100, Math.round(50 + (iaeN ? iaeSum / iaeN : 0))));
   const iue  = Math.max(-100, Math.min(100, Math.round(iueN ? iueSum / iueN * 2 : 0)));
   const iuee = Math.round((iue / 100) * iae);
-  return { iae, iue, iuee };
+
+  // Valores desagregados para el desglose del resultado
+  const iaec = iaecN ? Math.max(0, Math.min(100, Math.round(50 + iaecSum / iaecN))) : iae;
+  const iaee = iaeeN ? Math.max(0, Math.min(100, Math.round(50 + iaeeSum / iaeeN))) : iae;
+
+  return { iae, iue, iuee, iaec, iaee };
 }
 
 function quizGetZone(iae, iue) {
@@ -1532,11 +1564,30 @@ function quizRenderQuiz() {
 }
 
 function quizRenderResult() {
-  const { iae, iue, iuee } = quizCalcScores();
+  const { iae, iue, iuee, iaec, iaee } = quizCalcScores();
   const zone = quizGetZone(iae, iue);
   const near = quizNearest(iae, iue);
   const iueLbl = iue < -60 ? "Muy universalista" : iue < -20 ? "Universalista" : iue < 20 ? "Centro pragmático" : iue < 60 ? "Particularista" : "Muy particularista";
   const iaeLbl = iae < 20 ? "Muy reducido" : iae < 40 ? "Limitado" : iae < 60 ? "Moderado" : iae < 80 ? "Alto" : "Máximo";
+
+  // Nota de zona democrática
+  const zonaDemNote = (iae >= 20 && iae <= 65)
+    ? `<div class="quiz-zone-hetero-note">
+        <strong>Zona de alta heterogeneidad:</strong> Esta región concentra regímenes muy distintos entre sí.
+        La posición en el triángulo describe tu orientación declarada, no una trayectoria ni un tipo de régimen único.
+        Dos personas con índices similares pueden preferir mecanismos institucionales muy diferentes.
+       </div>`
+    : '';
+
+  // Desglose IAEc / IAEe
+  const asymNote = Math.abs(iaec - iaee) >= 10
+    ? `<div class="quiz-asym-note">
+        Tus respuestas sugieren una asimetría entre alcance civil (IAEc ≈ ${iaec}) y económico (IAEe ≈ ${iaee}):
+        ${iaec > iaee
+          ? 'preferís más regulación sobre comportamientos que sobre la economía.'
+          : 'preferís más intervención económica que control sobre libertades civiles.'}
+       </div>`
+    : '';
 
   return `
     <div class="quiz-result">
@@ -1559,11 +1610,35 @@ function quizRenderResult() {
           <div class="quiz-score-desc">IUE × IAE / 100</div>
         </div>
       </div>
+
+      <!-- Desglose IAEc / IAEe -->
+      <div class="quiz-breakdown">
+        <div class="quiz-breakdown-title">Desglose del alcance estatal</div>
+        <div class="quiz-breakdown-row">
+          <span class="quiz-breakdown-label">IAEc (alcance civil)</span>
+          <div class="quiz-breakdown-bar-wrap">
+            <div class="quiz-breakdown-bar quiz-breakdown-bar-c" style="width:${iaec}%"></div>
+          </div>
+          <span class="quiz-breakdown-val">${iaec}</span>
+        </div>
+        <div class="quiz-breakdown-row">
+          <span class="quiz-breakdown-label">IAEe (alcance económico)</span>
+          <div class="quiz-breakdown-bar-wrap">
+            <div class="quiz-breakdown-bar quiz-breakdown-bar-e" style="width:${iaee}%"></div>
+          </div>
+          <span class="quiz-breakdown-val">${iaee}</span>
+        </div>
+        <div class="quiz-breakdown-caption">Basado en preguntas de libertades civiles vs. intervención económica. El IAE final es el promedio ponderado.</div>
+        ${asymNote}
+      </div>
+
       <div class="quiz-zone-card">
         <div class="quiz-zone-tag">Zona identificada</div>
         <div class="quiz-zone-name">${zone.name}</div>
         <div class="quiz-zone-desc">${zone.desc}</div>
+        ${zonaDemNote}
       </div>
+
       <div class="quiz-comp-title">Regímenes más cercanos:</div>
       <div class="quiz-comp-list">
         ${near.map(c => `<div class="quiz-comp-item">
@@ -1573,8 +1648,12 @@ function quizRenderResult() {
         </div>`).join('')}
       </div>
       <div class="quiz-note">
-        <strong>Nota:</strong> Este cuestionario es orientativo y no reemplaza el cálculo riguroso del modelo,
-        que usa fuentes verificables (Freedom House, Fraser Institute, FMI). Un mismo resultado puede
+        <strong>Sobre el IUE:</strong> El eje universalista/particularista embebe una distinción de origen liberal-ilustrado.
+        No es un eje neutral: captura una variación empíricamente observable y políticamente relevante,
+        pero no es filosóficamente aséptico. El modelo lo declara explícitamente en su metodología.
+        <br><br>
+        <strong>Sobre las fuentes:</strong> Este cuestionario es orientativo. El cálculo riguroso usa
+        Freedom House, WJP Rule of Law, Fraser Economic Freedom, FMI y V-Dem. Un mismo resultado puede
         corresponder a regímenes muy distintos en sus consecuencias humanas.
       </div>
       <div class="quiz-result-actions">
