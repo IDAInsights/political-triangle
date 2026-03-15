@@ -1532,7 +1532,7 @@ function initHeroTriangle() {
     <polygon points="270,34 80,388 460,388" fill="url(#hGradRight)"/>
 
     <!-- Zona democrática — diamante con vértices lat. en perímetro -->
-    <polygon points="270,100 175,210 270,300 365,210"
+    <polygon points="270,120 175,210 270,300 365,210"
       fill="rgba(74,144,217,0.07)" stroke="rgba(74,144,217,0.40)"
       stroke-width="1" stroke-dasharray="5 3"/>
 
@@ -1566,11 +1566,11 @@ function initHeroTriangle() {
 
     <!-- Caja Comunismo -->
     <rect x="36" y="396" width="88" height="20" rx="5" fill="#888"/>
-    <text x="74" y="410" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8.5" fill="white" font-weight="600">Comunismo</text>
+    <text x="76" y="408" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8.5" fill="white" font-weight="600">Comunismo</text>
 
-    <!-- Caja Fascismo/Teocracia -->
+    <!-- Caja Fascismo -->
     <rect x="414" y="396" width="88" height="20" rx="5" fill="#8B1A1A"/>
-    <text x="457" y="410" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8.5" fill="white" font-weight="600">Fascismo</text>
+    <text x="458" y="408" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8.5" fill="white" font-weight="600">Fascismo</text>
 
   </svg>`;
 }
