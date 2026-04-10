@@ -1,15 +1,20 @@
 /**
  * EL TRIÁNGULO POLÍTICO — main.js
- * Codebook V3.3
+ * Codebook V4.0
  *
- * Cambios V3.3:
- *  - Fórmula IAE: ponderación 60/40 (IAEc × 0.60 + IAEe × 0.40)
- *  - Flag IAEc_represivo: alerta en panel experto cuando IAEc estimado ≥ 50
- *  - IAE_político para casos de colapso económico (IAEe < 10)
- *  - Casos recalculados con nueva ponderación
- *  - QUIZ_REGIMES sincronizados con valores de CASOS
- *  - Función toXY unificada (reemplaza 4 duplicados)
- *  - syncState() centraliza actualización de sliders + punto + panel + lectura
+ * Cambios V4.0 (sobre V3.3):
+ *  - Módulo ICAI §3.6: Índice de Conflicto Armado Interestatal continuo
+ *  - Módulo IC4  §4.4: Fragmentación del Bloque Gobernante
+ *  - Módulo IGE  §4.7: Índice Geopolítico Externo
+ *  - Módulo IC5  §4.8: Presión de Flujos Migratorios (IC5_emi / IC5_inmi)
+ *  - Módulo MCTI §3.7: Commodities y Términos de Intercambio
+ *  - Corrector §2.2.2b: Autonomía Empresarial Ficticia
+ *  - IRR_externo §3.6.3: nuevo flag de ruptura por causa externa
+ *  - IVR: cadenas de cálculo extendidas con pasos IC4 e ICAI
+ *  - Nuevos casos de calibración: Ucrania 2022, Bolivia 2014-16,
+ *    Venezuela/IGE, Cuba/IGE, URSS 1989 (ancla IC4)
+ *  - Panel especialista actualizado con flags V4.0
+ *  - Tabla de pesos temporales IVR₁/₅/₂₀ actualizada §5.4
  *
  * Módulos:
  *  1. Estado global
@@ -27,16 +32,61 @@
  */
 
 /* ══════════════════════════════════════════════════
-   FÓRMULAS CORE V3.3
+   FÓRMULAS CORE V4.0
 ══════════════════════════════════════════════════ */
 
 /**
- * Fórmula IAE V3.3 — ponderación 60/40.
+ * Fórmula IAE V4.0 — ponderación 60/40.
  * Cuando IAEe_efectivo < 10 (colapso económico), usa IAE_político = max(IAEc, IAEe).
  */
 function calcIAE(iaec, iaee) {
   if (iaee < 10) return Math.max(iaec, iaee); // IAE_político §2.2.0
   return Math.round((iaec * 0.60) + (iaee * 0.40));
+}
+
+/* ══════════════════════════════════════════════════
+   MÓDULOS V4.0
+══════════════════════════════════════════════════ */
+
+function calcICAI(intensidad, territorio, economiaGuerra) {
+  return Math.round(intensidad * 0.45 + territorio * 0.30 + economiaGuerra * 0.25);
+}
+function applyICAI_econ(vel, icai) { return vel * (1 - icai / 150); }
+function applyICAI_civil(if1c, icai, sunsetClause) {
+  const ft = sunsetClause ? 0.60 : 1.0;
+  return if1c - if1c * (icai / 200) * ft;
+}
+function calcIC4(disputas, sucesion, divergencia) {
+  return Math.round(disputas * 0.40 + sucesion * 0.30 + divergencia * 0.30);
+}
+function applyIC4_civil(vel, ic4) { return vel / (1 + ic4 / 100); }
+function applyIC4_econ(vel, ic4) { return vel / (1 + ic4 / 200); }
+function calcIGE(dependencia, sanciones, ii2c) {
+  const intInv = 100 - ii2c;
+  return Math.round(dependencia * 0.40 + sanciones * 0.35 + intInv * 0.25);
+}
+function calcIAEe_techo(ige) { return ige <= 60 ? 90 : Math.min(95, 90 + ige * 0.15); }
+function adjustII2a(ii2a, ige) { return ige <= 70 ? ii2a : Math.round(ii2a * (1 - ige / 200)); }
+function applyIC5_emi_IUE(tasaEmi, sesgo, iueSoc) {
+  return tasaEmi < 8 ? iueSoc : Math.round(iueSoc + tasaEmi * sesgo * 0.15);
+}
+function applyIC5_emi_II2b(ii2b, tasaEmi) {
+  return tasaEmi < 8 ? ii2b : Math.round(ii2b * (1 - tasaEmi / 200));
+}
+function applyIC5_inmi(shock, tasa, itc) {
+  return (tasa < 3 || itc < 20) ? shock : shock * (1 + tasa * (itc / 100) / 100);
+}
+function applyMCTI_PE(shockTI, peBase) { return peBase * (1 + shockTI * 0.20); }
+function calcIRR(ffaa, ic2, ic1, bloqueoLeg, ii1, ii2, icai) {
+  return {
+    golpe:     (ffaa >= 55 && ic2 >= 65 && ic1 >= 25) || (ffaa >= 70 && ic2 >= 50),
+    autogolpe: ic1 >= 45 && bloqueoLeg && ic2 >= 40 && ii1 <= 45 && ii2 <= 45,
+    colapso:   ic2 >= 90 && ii1 <= 15 && ii2 <= 20,
+    externo:   icai > 60,
+  };
+}
+function correctII2b_DimA(ii2bDimA, concPct) {
+  return concPct <= 30 ? ii2bDimA : Math.round(ii2bDimA * (1 - concPct / 200));
 }
 
 /**
@@ -159,7 +209,7 @@ const ZONAS = [
 ];
 
 /**
- * Casos ilustrativos — V3.3
+ * Casos ilustrativos — V4.0
  * IAE recalculado con fórmula 60/40: IAE = (IAEc × 0.60) + (IAEe × 0.40)
  * Los casos con IAEe < 10 usan IAE_político = max(IAEc, IAEe) §2.2.0
  * Nota: el desplazamiento al alza respecto a V3.2 es intencional (ver Nota de Versión).
@@ -236,7 +286,7 @@ const CASOS = [
     color: '#8B6914',
     zona: 'Autoritarismo por desempeño',
     filter: 'autoritario',
-    desc: 'Autoritarismo por desempeño. Asimetría R1 marcada: IAEc (44) muy superior a IAEe (21). V3.3 amplía la separación respecto a regímenes con IAEc~IAEe similar. Control político con economía muy libre.',
+    desc: 'Autoritarismo por desempeño. Asimetría R1 marcada: IAEc (44) muy superior a IAEe (21). V4.0 amplía la separación respecto a regímenes con IAEc~IAEe similar. Control político con economía muy libre.',
     indices: { iaec: 44, iaee: 21 },
     iaec: 44,
     iaee_val: 21,
@@ -332,7 +382,7 @@ const CASOS = [
     color: '#0F6E5A',
     zona: 'Social democracia plena',
     filter: 'democratico',
-    desc: 'Modelo de Estado de bienestar en su punto de mayor expansión. IAEc muy bajo (33), IAEe elevado (57) por gasto público ~62% del PIB. V3.3: calibrado como punto de inflexión del coeficiente wc=0.60.',
+    desc: 'Modelo de Estado de bienestar en su punto de mayor expansión. IAEc muy bajo (33), IAEe elevado (57) por gasto público ~62% del PIB. V4.0: calibrado como punto de inflexión del coeficiente wc=0.60.',
     indices: { iaec: 33, iaee: 57 },
     iaec: 33,
     iaee_val: 57,
@@ -400,6 +450,101 @@ const CASOS = [
       iue: 50,
       color: '#4A1A1A',
       desc: 'Toma del poder: alcance estatal moderado en expansión, uso del Estado virando hacia la homogeneización cultural.',
+    },
+  },
+  {
+    // Ucrania 2022: ancla ICAI §3.6. IAE = (55×0.60)+(38×0.40) = 33+15.2 = 48
+    // ICAI activo: Intensidad=80, Territorio=45, EconGuerra=70 → ICAI≈65
+    // IRR_externo=TRUE (ICAI>60). IVR_econ moderado por applyICAI_econ.
+    id: 'ucrania_2022',
+    label: 'Ucrania',
+    periodo: '2022–2024',
+    iae: 48,
+    iue: -10,
+    color: '#2D6FA3',
+    zona: 'Democracia en conflicto',
+    filter: 'autoritario',
+    desc: 'Democracia con ICAI activo (conflicto armado interestatal de alta intensidad). Expansión del IAEc por estado de emergencia — §3.6.1 aplica descuento por sunset clause documentado. IVR_econ moderado por applyICAI_econ (divisor 150). IRR_externo=TRUE.',
+    indices: { iaec: 55, iaee: 38 },
+    iaec: 55,
+    iaee_val: 38,
+    v4flags: { icai: 65, irr_externo: true },
+    trayectoria: {
+      label: 'Ucrania 2021',
+      iae: 40,
+      iue: -15,
+      color: '#2D6FA3',
+      desc: 'Democracia pre-conflicto: alcance estatal moderado, pluralismo político real.',
+    },
+  },
+  {
+    // Bolivia 2014-16: ancla MCTI colapso (caída gas natural) §3.7
+    // IAE = (48×0.60)+(52×0.40) = 28.8+20.8 = 50
+    // shock_TI negativo → PE_econ_post_MCTI baja, SC_ratio erosionado
+    id: 'bolivia_mcti',
+    label: 'Bolivia',
+    periodo: '2014–2016',
+    iae: 50,
+    iue: -55,
+    color: '#8B6914',
+    zona: 'Intervencionismo izquierdista',
+    filter: 'autoritario',
+    desc: 'Caso ancla MCTI §3.7: colapso del precio del gas natural (concentración exportadora >40%). Shock_TI negativo erosiona SC_ratio y reduce PE_econ. MCTI activo requiere RSA Amplio automático. Anti-doble contabilización IC2/MCTI §3.7.1 activa.',
+    indices: { iaec: 48, iaee: 52 },
+    iaec: 48,
+    iaee_val: 52,
+    v4flags: { mcti: true, mctiShock: -0.35 },
+  },
+  {
+    // Cuba 1990-93: ancla IGE (colapso URSS) §4.7
+    // IAE = (72×0.60)+(48×0.40) = 43.2+19.2 = 62
+    // IGE alto por Dependencia_estratégica=95 (URSS) → IAEe_techo_efectivo ajustado
+    id: 'cuba_ige',
+    label: 'Cuba',
+    periodo: '1990–1993',
+    iae: 62,
+    iue: -80,
+    color: '#A0132B',
+    zona: 'Autoritarismo izquierdista',
+    filter: 'extremo',
+    desc: 'Caso ancla IGE §4.7: pérdida del patrocinador externo (colapso URSS). Dependencia_estratégica≈95 → IAEe_techo_efectivo elevado artificial. Pérdida de la URSS reduce IGE abruptamente y colapsa el SC₀_econ. RSA Amplio automático.',
+    indices: { iaec: 72, iaee: 48 },
+    iaec: 72,
+    iaee_val: 48,
+    highCoercion: true,
+    v4flags: { ige: 85, igeNote: 'Colapso patrocinador externo — ancla §4.7' },
+    trayectoria: {
+      label: 'Cuba 1988',
+      iae: 70,
+      iue: -85,
+      color: '#A0132B',
+      desc: 'Pre-colapso soviético: IAEe artificialmente sostenido por subsidios externos.',
+    },
+  },
+  {
+    // URSS 1989-91: ancla IC4 §4.4
+    // IAE = (69×0.60)+(72×0.40) = 41.4+28.8 = 70
+    // IC4 alto (fractura Gorbachov/aparato) → Vel₁_civil dividida por (1+IC4/100)
+    id: 'urss_1989',
+    label: 'URSS',
+    periodo: '1989–1991',
+    iae: 70,
+    iue: -85,
+    color: '#6B1A1A',
+    zona: 'Totalitarismo en desintegración',
+    filter: 'extremo',
+    desc: 'Caso ancla IC4 §4.4: fragmentación del bloque gobernante (Gorbachov vs. aparato del partido, divergencia civil-FF.AA.). IC4 elevado reduce Vel₁_civil pese a IF2 fuerte. Demuestra que la fragmentación frena el cambio pero no lo invierte. IC4 no aplica en IVR₂₀ (horizonte generacional).',
+    indices: { iaec: 69, iaee: 72 },
+    iaec: 69,
+    iaee_val: 72,
+    highCoercion: true,
+    v4flags: { ic4: 75, ic4Note: 'Fractura bloque gobernante — ancla §4.4' },
+    trayectoria: {
+      label: 'URSS 1985',
+      iae: 72,
+      iue: -90,
+      color: '#6B1A1A',
+      desc: 'Pre-Gorbachov: bloque gobernante cohesionado, IC4 mínimo.',
     },
   },
 ];
@@ -846,7 +991,7 @@ const CONTEXT_DB = [
     test: (iae, iue) => iae >= 58 && iue < -40,
     public: 'Estado muy poderoso orientado a un proyecto de homogeneización económica. El aparato estatal tiene alcance real sobre la economía y la vida civil, y lo usa para eliminar diferencias de clase o propiedad. A esta escala de coerción, la supresión violenta de la disidencia es estructural, no excepcional.',
     student: 'Alta coerción + orientación universalista: el Estado puede realmente redistribuir, pero también suprime disidencia por medios violentos. Los regímenes históricos en esta zona —URSS estalinista, Camboya bajo los Jemeres Rojos, Corea del Norte— documentan terror sistemático como instrumento de homogeneización. El modelo describe la estructura de poder; no captura la distinción moral entre tipos de coerción.',
-    expert: 'IUEe negativo elevado. Protocolo de coerción extrema obligatorio si hay evidencia documentada de crímenes de lesa humanidad. IC2 negativo (crisis económica) típicamente invierte el IVR en estos regímenes. CE elevado si las élites del partido capturan el aparato redistribuidor.',
+    expert: 'IUEe negativo elevado. Protocolo de coerción extrema obligatorio §1.3. IC4 relevante si hay fractura interna (ver URSS 1989). ICAI puede activarse si conflicto interestatal. IGE puede elevar IAEe_techo si dependencia estratégica > 60. IC5_emi puede erosionar II2b y desplazar IUE_sociedad si emigración masiva activa.',
   },
   // Autoritarismo pragmático
   {
@@ -860,7 +1005,7 @@ const CONTEXT_DB = [
     test: (iae, iue) => iae >= 58 && iue > 40,
     public: 'Estado muy poderoso orientado a imponer un orden cultural, nacional o religioso particular. La coerción se dirige a eliminar la diversidad en nombre de una identidad o fe. A esta escala de coerción, la supresión violenta de la disidencia es estructural, no excepcional.',
     student: 'La distinción entre fascismo, teocracia y nacionalismo extremo no es el nivel de coerción (todos tienen IAE muy alto), sino el contenido del proyecto particularista (nación, raza, religión). Los regímenes históricos en esta zona —Alemania Nazi, Irán teocrático, regímenes de apartheid— documentan terror sistemático como instrumento de homogeneización cultural. El modelo describe la estructura de poder; no captura la distinción moral entre tipos de coerción.',
-    expert: 'IUEe positivo elevado. Protocolo de coerción extrema obligatorio si hay evidencia documentada de crímenes de lesa humanidad. Máxima presión homogeneizadora. IAEc dominante sobre IAEe en la mayoría de los casos históricos de esta zona.',
+    expert: 'IUEe positivo elevado. Protocolo de coerción extrema obligatorio §1.3. IC5_inmi puede amplificar IF3_der_shock si ITC alto (ver Suecia 2015). IC4 relevante si hay fractura gobierno/FF.AA. ICAI eleva IAEc por medidas de emergencia — verificar sunset clause para §3.6.1.',
   },
 ];
 
@@ -949,11 +1094,11 @@ function updatePositionPanel() {
   if (expertPanel) {
     expertPanel.hidden = !state.expertMode;
     if (state.expertMode) {
-      // Fórmulas vivas V3.3
+      // Fórmulas vivas V4.0
       const formIUEe = document.getElementById('posFormIUEe');
       if (formIUEe) formIUEe.textContent = `(${state.iue}/100) × ${state.iae} = ${iuee}`;
 
-      // Fórmula IAE V3.3 60/40
+      // Fórmula IAE V4.0 60/40
       const formIAE = document.getElementById('posFormIAE');
       if (formIAE) {
         const iueNorm = state.iue / 100;
@@ -972,7 +1117,7 @@ function updatePositionPanel() {
         const iaeeV = Math.max(0, Math.min(100, Math.round(state.iae * (1 - asymmetry - 0.05))));
         formAsym.textContent = `IAEc≈${iaecV}, IAEe≈${iaeeV}`;
 
-        // ── Flag IAEc_represivo §2.2.1a V3.3 ──────────────────────────
+        // ── Flag IAEc_represivo §2.2.1a V4.0 ──────────────────────────
         // Se activa cuando IAEc estimado ≥ 50 (alcance civil alto).
         // Protocolo §1.3: el output debe acompañarse de contexto sobre tipo de coerción.
         let flagEl = document.getElementById('posIAEcRepresivo');
@@ -993,6 +1138,43 @@ function updatePositionPanel() {
           flagEl.hidden = true;
         }
       }
+
+
+      // ── Flags V4.0: ICAI, IC4, IGE, RSA ──────────────────────────
+      let v4flagEl = document.getElementById('posV4Flags');
+      if (!v4flagEl) {
+        v4flagEl = document.createElement('div');
+        v4flagEl.id = 'posV4Flags';
+        v4flagEl.className = 'pos-v4-flags';
+        const sens = document.querySelector('.pos-sensitivity');
+        if (sens) sens.insertAdjacentElement('beforebegin', v4flagEl);
+      }
+      const activeCasoData = state.activeCaso
+        ? (typeof CASOS !== 'undefined' ? CASOS.find(c => c.id === state.activeCaso) : null)
+        : null;
+      const v4f = activeCasoData && activeCasoData.v4flags ? activeCasoData.v4flags : {};
+      let flagsHTML = '';
+      if (v4f.icai > 0) {
+        flagsHTML += `<div class="v4-flag v4-flag-icai"><strong>⚑ ICAI activo — ${v4f.icai}</strong> · Conflicto armado interestatal. RSA Amplio automático. IVR_econ moderado por divisor 150.</div>`;
+      }
+      if (v4f.irr_externo) {
+        flagsHTML += `<div class="v4-flag v4-flag-irr"><strong>⚑ IRR_externo = TRUE</strong> · §3.6.3: ICAI > 60. Riesgo de ruptura sistémica por causa externa.</div>`;
+      }
+      if (v4f.ic4 > 0) {
+        flagsHTML += `<div class="v4-flag v4-flag-ic4"><strong>IC4 = ${v4f.ic4}</strong> · ${v4f.ic4Note || 'Fragmentación del bloque gobernante'}. Vel₁_civil ÷ (1 + ${v4f.ic4}/100). RSA Amplio.</div>`;
+      }
+      if (v4f.ige > 0) {
+        flagsHTML += `<div class="v4-flag v4-flag-ige"><strong>IGE = ${v4f.ige}</strong> · ${v4f.igeNote || 'Índice Geopolítico Externo activo'}. IAEe_techo_efectivo = ${Math.min(95, 90 + v4f.ige * 0.15).toFixed(1)}. RSA Amplio.</div>`;
+      }
+      if (v4f.mcti) {
+        const shockDir = v4f.mctiShock > 0 ? 'boom' : 'colapso';
+        flagsHTML += `<div class="v4-flag v4-flag-mcti"><strong>MCTI activo</strong> · Shock TI ${shockDir} (${v4f.mctiShock > 0 ? '+' : ''}${(v4f.mctiShock * 100).toFixed(0)}%). PE_econ y SC ajustados. RSA Amplio.</div>`;
+      }
+      if (state.iae > 55 && Math.abs(state.iue) > 40) {
+        flagsHTML += `<div class="v4-flag v4-flag-rsa"><strong>RSA Amplio recomendado</strong> · Zona de alta coerción e ideología marcada. Complementar con ficha §6.1.</div>`;
+      }
+      v4flagEl.innerHTML = flagsHTML || '<p class="v4-flags-empty">Sin flags V4.0 activos para esta posición.</p>';
+      v4flagEl.hidden = !flagsHTML;
 
       // Sensibilidad ±5 IAE
       const zoneMinus = document.getElementById('posSensZoneMinus');
@@ -1292,6 +1474,10 @@ function initCasos() {
           ${caso.label}
           <span class="caso-period">${caso.periodo}</span>
           ${caso.highCoercion ? '<span class="caso-coercion-badge">⚑ alta coerción</span>' : ''}
+          ${caso.v4flags && caso.v4flags.icai > 0 ? '<span class="caso-v4-flag caso-v4-flag-icai">ICAI ' + caso.v4flags.icai + '</span>' : ''}
+          ${caso.v4flags && caso.v4flags.ic4  > 0 ? '<span class="caso-v4-flag caso-v4-flag-ic4">IC4 '  + caso.v4flags.ic4  + '</span>' : ''}
+          ${caso.v4flags && caso.v4flags.ige  > 0 ? '<span class="caso-v4-flag caso-v4-flag-ige">IGE '  + caso.v4flags.ige  + '</span>' : ''}
+          ${caso.v4flags && caso.v4flags.mcti  ? '<span class="caso-v4-flag caso-v4-flag-mcti">MCTI</span>' : ''}
         </div>
         <div class="caso-desc">${caso.desc}</div>
       </div>
@@ -1776,12 +1962,16 @@ const QUIZ_LABELS = [
   "Totalmente de acuerdo"
 ];
 
-// QUIZ_REGIMES — sincronizados con CASOS V3.3 [iae, iue, label, color]
+// QUIZ_REGIMES — sincronizados con CASOS V4.0 [iae, iue, label, color]
 const QUIZ_REGIMES = [
   [39, -40, 'Noruega',          '#1B5C9E'],
   [35,  20, 'EE.UU. 2000s',     '#2874A6'],
   [52, -15, 'China actual',     '#C0392B'],
   [52, -65, 'Venezuela 2010s',  '#E07B20'],
+  [48, -10, 'Ucrania 2022',     '#2D6FA3'],
+  [50, -55, 'Bolivia 2014',     '#8B6914'],
+  [62, -80, 'Cuba 1990',        '#A0132B'],
+  [70, -85, 'URSS 1989',        '#6B1A1A'],
   [51,  80, 'Irán actual',      '#8B1A1A'],
   [ 9,   0, 'Somalia 1990s',    '#888'   ],
   [43, -55, 'Suecia 1980s',     '#0F6E5A'],
@@ -1824,7 +2014,7 @@ function quizCalcScores() {
   const iaec = iaecN ? Math.max(0, Math.min(100, Math.round(50 + iaecSum / iaecN))) : 50;
   const iaee = iaeeN ? Math.max(0, Math.min(100, Math.round(50 + iaeeSum / iaeeN))) : 50;
 
-  // V3.3: fórmula 60/40 con IAE_político si IAEe < 10
+  // V4.0: fórmula 60/40 con IAE_político si IAEe < 10
   const iae  = calcIAE(iaec, iaee);
   const iue  = Math.max(-100, Math.min(100, Math.round(iueN ? iueSum / iueN * 2 : 0)));
   const iuee = Math.round((iue / 100) * iae);

@@ -2305,3 +2305,166 @@ em.iue-bias-note {
     fill: var(--bg-triangle);
   }
 }
+
+
+/* ══════════════════════════════════════════════════
+   COMPONENTES V4.0
+══════════════════════════════════════════════════ */
+
+/* ─── FLAGS V4.0 (panel especialista) ─────────────── */
+.pos-v4-flags {
+  margin: var(--gap-sm) 0 var(--gap-md);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.v4-flag {
+  font-size: 0.76rem;
+  line-height: 1.55;
+  padding: 7px 12px;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  color: var(--ink-2);
+}
+
+.v4-flag strong { font-weight: 500; }
+
+.v4-flag-icai {
+  background: var(--red-light);
+  border-left: 3px solid var(--red);
+}
+.v4-flag-icai strong { color: var(--red); }
+
+.v4-flag-irr {
+  background: var(--red-light);
+  border-left: 3px solid #8B0000;
+}
+.v4-flag-irr strong { color: #8B0000; }
+
+.v4-flag-ic4 {
+  background: var(--purple-light);
+  border-left: 3px solid var(--purple);
+}
+.v4-flag-ic4 strong { color: var(--purple); }
+
+.v4-flag-ige {
+  background: var(--teal-light);
+  border-left: 3px solid var(--teal);
+}
+.v4-flag-ige strong { color: var(--teal); }
+
+.v4-flag-mcti {
+  background: var(--amber-light);
+  border-left: 3px solid var(--amber);
+}
+.v4-flag-mcti strong { color: var(--amber); }
+
+.v4-flag-rsa {
+  background: var(--surface-2);
+  border-left: 3px solid var(--ink-4);
+}
+.v4-flag-rsa strong { color: var(--ink-3); }
+
+.v4-flags-empty {
+  font-size: 0.76rem;
+  color: var(--ink-4);
+  font-style: italic;
+}
+
+/* ─── BADGE MÓDULO EXPERIMENTAL V4.0 ─────────────── */
+.v4-experimental-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: var(--amber);
+  background: var(--amber-light);
+  padding: 2px 8px;
+  border-radius: 100px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+/* ─── CASO CON FLAGS V4.0 ─────────────────────────── */
+.caso-v4-flag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.68rem;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 100px;
+  margin-left: 4px;
+  white-space: nowrap;
+}
+
+.caso-v4-flag-icai {
+  background: var(--red-light);
+  color: var(--red);
+}
+
+.caso-v4-flag-ic4 {
+  background: var(--purple-light);
+  color: var(--purple);
+}
+
+.caso-v4-flag-ige {
+  background: var(--teal-light);
+  color: var(--teal);
+}
+
+.caso-v4-flag-mcti {
+  background: var(--amber-light);
+  color: var(--amber);
+}
+
+/* ─── DARK MODE V4.0 FLAGS ────────────────────────── */
+@media (prefers-color-scheme: dark) {
+  .v4-flag { color: var(--ink-2); }
+
+  .v4-flag-icai  { background: rgba(200, 55, 45, 0.15); border-color: #e05a50; }
+  .v4-flag-icai strong { color: #e05a50; }
+
+  .v4-flag-irr   { background: rgba(139, 0, 0, 0.18); border-color: #c45050; }
+  .v4-flag-irr strong { color: #c45050; }
+
+  .v4-flag-ic4   { background: rgba(94, 63, 160, 0.18); border-color: #9b7fd4; }
+  .v4-flag-ic4 strong { color: #9b7fd4; }
+
+  .v4-flag-ige   { background: rgba(15, 110, 90, 0.18); border-color: #2a9e7a; }
+  .v4-flag-ige strong { color: #2a9e7a; }
+
+  .v4-flag-mcti  { background: rgba(181, 96, 10, 0.18); border-color: #d4803a; }
+  .v4-flag-mcti strong { color: #d4803a; }
+
+  .v4-flag-rsa   { background: var(--surface-2); border-color: var(--ink-4); }
+}
+
+/* ─── TABLA PESOS TEMPORALES IVR ──────────────────── */
+.ivr-weights-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+  margin-top: var(--gap-sm);
+  font-family: var(--font-body);
+}
+
+.ivr-weights-table th {
+  background: var(--surface-2);
+  color: var(--ink-3);
+  font-weight: 500;
+  padding: 6px 10px;
+  text-align: left;
+  border-bottom: 1px solid var(--surface-2);
+  letter-spacing: 0.03em;
+}
+
+.ivr-weights-table td {
+  padding: 5px 10px;
+  border-bottom: 1px solid var(--surface);
+  color: var(--ink-2);
+}
+
+.ivr-weights-table tr:last-child td { border-bottom: none; }
+.ivr-weights-table .v4-row td { color: var(--amber); font-style: italic; }

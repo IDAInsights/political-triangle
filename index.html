@@ -34,7 +34,7 @@
   <!-- ══════════════════════════════════ HERO ═══════════════════════════════════ -->
   <section id="inicio" class="hero">
     <div class="hero-text">
-      <p class="hero-eyebrow">Codebook V3.3</p>
+      <p class="hero-eyebrow">Codebook V4.0</p>
       <h1>¿Dónde está<br /><em>realmente</em> un<br />régimen político?</h1>
       <p class="hero-sub">
         El eje izquierda–derecha captura solo una dimensión del poder.
@@ -154,7 +154,7 @@
         <polygon points="320,36 100,466 540,466" fill="url(#gLiberal)"/>
         <polygon points="320,36 100,466 540,466" fill="url(#gInterv)"/>
 
-        <!-- Zona democrática IAE 20-55 (V3.3 — recalibrada con ponderación 60/40) -->
+        <!-- Zona democrática IAE 20-55 (V4.0 — calibrada con ponderación 60/40) -->
         <polygon
           points="320,122 254,195 320,272 386,195"
           fill="rgba(74,144,217,0.06)" stroke="rgba(74,144,217,0.30)"
@@ -442,7 +442,7 @@
           <p><strong>Qué no puede predecir:</strong> cuándo ocurrirá una crisis, quién ganará una elección específica, si un líder será derrocado, la velocidad exacta del cambio, ni shocks geopolíticos imprevisibles.</p>
         </div>
         <div class="card-technical" hidden>
-          <p>Las fuerzas que componen el IVR son: IF1 (presión expansiva del IAE), IF2 (entropía liberal, presión contractiva), IF3 (deriva cultural sobre el IUE). Los catalizadores IC1 (liderazgo personal) e IC2 (crisis/bonanza) aceleran o invierten las fuerzas. Los inhibidores II1 (legitimidad institucional) e II2 (fragmentación del poder) frenan el cambio. El IVR₁ combina todas estas fuerzas a plena velocidad; el IVR₅ descuenta IC2; el IVR₂₀ privilegia IF3_base e II2b.</p>
+          <p>V4.0 — Cadena completa Vel₁_civil: (1) IVR₁=IF1c−IF2c; (2) ×(1+IC1/100)×(1+IC2/100)×II1×II2; (3) ×tanh PE_civil; (4) ÷(1+IC4/100) si IC4 activo; (5) ×(1−ICAI/150) si ICAI activo. Cadena Vel₁_econ: 8 pasos análogos con IC4 divisor 200. Pesos temporales: IC4 100%/70%/0%; ICAI 100%/60%/0%; IGE 100%/90%/50%; IC5_emi 100%/60%/20%; IC5_inmi 100%/40%/0%.</p>
         </div>
         <button class="card-toggle">Ver más ↓</button>
       </article>
@@ -571,6 +571,71 @@
         <button class="card-toggle">Ver más ↓</button>
       </article>
 
+
+      <article class="index-card" data-index="ic4">
+        <div class="card-icon" style="background:var(--purple)">IC4</div>
+        <h3>Fragmentación del Bloque Gobernante</h3>
+        <p class="card-plain">
+          Un gobierno con liderazgo fuerte pero con fractura interna profunda ejecuta su agenda
+          a velocidad significativamente menor. IC4 actúa como <strong>denominador</strong>
+          en la cadena de velocidades: no invierte el vector, lo frena.
+        </p>
+        <div class="card-student student-only" hidden>
+          <span class="card-student-label">La URSS 1989 como caso ancla</span>
+          <p>Gorbachov tenía el título pero el aparato del partido y las FF.AA. divergían sistemáticamente de sus decisiones. IC4 alto explica por qué la URSS tardó dos años en colapsar pese a tener un IVR fuertemente liberal: la fragmentación ralentizó la ejecución de la agenda. El modelo captura que la fractura interna frena pero no detiene el cambio estructural.</p>
+        </div>
+        <div class="card-technical" hidden>
+          <code>IC4 = Disputas×0.40 + Sucesión×0.30 + Divergencia_FFAA×0.30</code>
+          <code>Vel₁_civil / (1 + IC4/100) · Vel₁_econ / (1 + IC4/200)</code>
+          <p>El descuento es mayor sobre el eje civil (divisor 100) porque la fragmentación afecta primordialmente la capacidad de ejecutar agenda política. El eje económico usa divisor 200 por inercia institucional. Guardas: no aplica cuando IF2_fuente=SOCIAL, ni en IVR₂₀, ni cuando IAEc≥70 e IC1≥70. RSA Amplio automático cuando IC4 > 50. Módulo experimental V4.0 — calibrar sobre URSS 1989–1991.</p>
+        </div>
+        <button class="card-toggle">Ver más ↓</button>
+      </article>
+
+      <article class="index-card" data-index="ige">
+        <div class="card-icon" style="background:var(--teal)">IGE</div>
+        <h3>Índice Geopolítico Externo</h3>
+        <p class="card-plain">
+          Captura la posición del Estado en el sistema internacional como factor que modifica
+          el <strong>techo efectivo del IAEe</strong> y la autonomía real del sector privado.
+          Opera como modificador estructural, no como fuerza direccional.
+        </p>
+        <div class="card-student student-only" hidden>
+          <span class="card-student-label">Cuba 1990: cuando el patrocinador desaparece</span>
+          <p>Cuba mantenía estructuras estatales que su economía sola no podía sostener porque la URSS subsidiaba el déficit. El IAEe_techo_efectivo era artificialmente elevado. Cuando la URSS colapsó, el IGE cayó abruptamente: el techo bajó y el SC₀ desapareció. El "Período Especial" cubano es el caso calibrado de esta dinámica.</p>
+        </div>
+        <div class="card-technical" hidden>
+          <code>IGE = Dependencia_estratégica×0.40 + Exposición_sanciones×0.35 + (100−II2c)×0.25</code>
+          <code>IAEe_techo = min(95, 90 + IGE×0.15) cuando IGE > 60</code>
+          <code>II2a_efectivo = II2a × (1 − IGE/200) cuando IGE > 70</code>
+          <p>Un Estado con alta dependencia estratégica puede mantener estructuras que el PE_econ solo no sostendría, porque el patrocinador externo subsidia el déficit. El divisor 200 es conservador: la reducción máxima de II2a es 50%. RSA Amplio automático cuando IGE > 60. Módulo experimental V4.0.</p>
+        </div>
+        <button class="card-toggle">Ver más ↓</button>
+      </article>
+
+      <article class="index-card" data-index="ic5">
+        <div class="card-icon" style="background:var(--blue)">IC5</div>
+        <h3>Presión de Flujos Migratorios</h3>
+        <p class="card-plain">
+          Dos efectos diferenciados: la <strong>emigración masiva</strong> (IC5_emi) erosiona
+          la sociedad civil y desplaza el IUE_sociedad; la <strong>inmigración masiva</strong>
+          (IC5_inmi) amplifica la presión cultural particularista cuando ya existe tensión.
+        </p>
+        <div class="card-student student-only" hidden>
+          <span class="card-student-label">Venezuela vs. Suecia: dos tipos de shock migratorio</span>
+          <p>Venezuela 2015–2022: emigración >15% de la PEA, ideológicamente sesgada (oposición). IC5_emi desplaza IUE_sociedad hacia la derecha (menos tolerancia al gobierno), erosiona II2b (sociedad civil debilitada). Suecia 2015–18: inmigración >3% de la población con ITC ya alto. IC5_inmi amplifica IF3_der_shock, acelerando el desplazamiento del IUE hacia la derecha que se observó.</p>
+        </div>
+        <div class="card-technical" hidden>
+          <code>IC5_emi: activa cuando emigración_neta_5a / PEA > 8%</code>
+          <code>IUE_soc_adj = IUE_soc + IC5_emi × sesgo × 0.15</code>
+          <code>II2b_post = II2b × (1 − IC5_emi/200)</code>
+          <code>IC5_inmi: activa cuando inmigración_neta > 3% población</code>
+          <code>IF3_der_shock_post = IF3_der_shock × (1 + IC5_inmi × ITC/100)</code>
+          <p>IC5_inmi solo opera sobre IF3_der_shock (no sobre IF3_der_base). Si ITC < 20, el efecto es nulo. sesgo_migratorio: +1 si IUE_gov > 20 / −1 si IUE_gov < −20 / 0 en otro caso. Módulo experimental V4.0 — RSA Amplio automático.</p>
+        </div>
+        <button class="card-toggle">Ver más ↓</button>
+      </article>
+
       <!-- ── Inhibidores ── -->
       <div class="fuerzas-subsection-header fuerzas-subsection-border">
         <h3 class="fuerzas-subheading">Inhibidores</h3>
@@ -653,7 +718,7 @@
       <h2>Regímenes en el triángulo</h2>
       <p class="section-desc">
         Estos casos son ilustrativos del modelo, no diagnósticos definitivos.
-        Los valores fueron estimados aplicando el Codebook V3.3 sobre Freedom House, WJP Rule of Law,
+        Los valores fueron estimados aplicando el Codebook V4.0 sobre Freedom House, WJP Rule of Law,
         Fraser Economic Freedom of the World, FMI WEO y V-Dem. La fórmula IAE usa ponderación 60/40 (V3.3).
         Para análisis riguroso,
         cada caso requiere la ficha completa de cálculo con fuentes explícitas y nivel RSA.
@@ -837,11 +902,12 @@
       <div class="met-block">
         <h3>Límites declarados</h3>
         <ul class="met-list">
-          <li>Coerción no estatal sin respaldo formal</li>
-          <li>Colapsos por factores externos puros</li>
+          <li>Coerción no estatal sin respaldo estatal formal</li>
+          <li>Eventos discontinuos: golpes, autogolpes, colapsos súbitos — el IVR predice velocidades continuas, no umbrales de ruptura</li>
           <li>Pobreza estructural o exclusión sin violencia directa</li>
-          <li>Eventos cisne negro y shocks geopolíticos</li>
-          <li>La distinción cualitativa entre tipos de coerción</li>
+          <li>Regímenes rentistas con IR > 70 (módulo MCTI pendiente validación)</li>
+          <li>Conflicto armado interestatal extremo (ICAI > 85 + territorio perdido > 40%): IVR_econ inaplicable</li>
+          <li>La distinción cualitativa entre tipos de coerción — el protocolo §1.3 es obligatorio en zonas de alta coerción</li>
         </ul>
       </div>
 
@@ -863,20 +929,45 @@
         la ponderación 60/40 del IAE, el flag IAEc_represivo, el IAE_político para colapsos económicos,
         la recalibración del rombo democrático y el protocolo t=0 para validación retrospectiva.
         El coeficiente wc (0.60) está fijado para validación — pendiente test de sensibilidad en rango 0.55–0.65.
-        La documentación técnica completa se encuentra en el Codebook V3.3.</p>
+        La documentación técnica completa se encuentra en el Codebook V4.0.</p>
       </div>
 
       <div class="met-block">
         <h3>Hoja de ruta</h3>
         <ul class="met-list met-list-ok">
-          <li>Calibrar parámetros sobre muestra ampliada de 50–100 casos históricos</li>
-          <li>Evaluar incorporación de un Índice Tecnológico al modelo central</li>
-          <li>Desarrollar software de cálculo automatizado</li>
+          <li>Graduar módulos experimentales V4.0: batería ≥5 casos por módulo (A.32–A.36)</li>
+          <li>Calibrar ICAI: Ucrania 2022–24, Israel 1948–49, Corea 1950–53</li>
+          <li>Calibrar MCTI: Bolivia 2014–16, Venezuela 1999–06, Nigeria 2015–16</li>
+          <li>Calibrar IC4: URSS 1989–91, Zimbaue 2017, Bolivia 2019</li>
+          <li>Test sensibilidad coeficiente wc en rango 0.55–0.65</li>
           <li>Publicación académica con comparación entre versiones del modelo</li>
         </ul>
       </div>
 
-      <div class="met-block met-block-codebook">
+            <div class="met-block">
+        <h3>Tabla de pesos temporales — V4.0 §5.4</h3>
+        <table class="ivr-weights-table">
+          <thead>
+            <tr><th>Fuerza/Módulo</th><th>IVR₁</th><th>IVR₅</th><th>IVR₂₀</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>IF1/IF2</td><td>100%</td><td>100%</td><td>50%</td></tr>
+            <tr><td>IF3_base</td><td>20%</td><td>60%</td><td>100%</td></tr>
+            <tr><td>IF3_shock</td><td>100%</td><td>30%</td><td>0%</td></tr>
+            <tr><td>IC1</td><td>100%</td><td>100%</td><td>10%</td></tr>
+            <tr><td>IC2</td><td>100%</td><td>30%</td><td>0%</td></tr>
+            <tr><td>II2b</td><td>100%</td><td>100%</td><td>130%</td></tr>
+            <tr class="v4-row"><td>IC4 (V4.0)</td><td>100%</td><td>70%</td><td>0%</td></tr>
+            <tr class="v4-row"><td>ICAI (V4.0)</td><td>100%</td><td>60%</td><td>0%</td></tr>
+            <tr class="v4-row"><td>IGE (V4.0)</td><td>100%</td><td>90%</td><td>50%</td></tr>
+            <tr class="v4-row"><td>IC5_emi (V4.0)</td><td>100%</td><td>60%</td><td>20%</td></tr>
+            <tr class="v4-row"><td>IC5_inmi (V4.0)</td><td>100%</td><td>40%</td><td>0%</td></tr>
+          </tbody>
+        </table>
+        <p style="font-size:0.75rem;color:var(--ink-4);margin-top:8px">Filas en cursiva: módulos experimentales V4.0 con RSA Amplio automático hasta graduación formal (A.32–A.36).</p>
+      </div>
+
+<div class="met-block met-block-codebook">
         <h3>Validación retrospectiva</h3>
         <p>El modelo fue calibrado sobre los siguientes casos históricos:</p>
         <div class="codebook-inline" id="codebookInline">
@@ -893,6 +984,10 @@
             <p>Suecia 1950–80 ✓ · Singapur 1965–2020 ✓ · Hungría 2010–24 ✓</p>
           </div>
           <div class="codebook-item">
+            <span class="codebook-item-label">Nuevos casos V4.0 (calibración)</span>
+            <p>Ucrania 2022–24 (ICAI) · Bolivia 2014–16 (MCTI) · Venezuela/IGE · Cuba 1990–93 (IGE) · URSS 1989–91 (IC4) · Suecia 2015–18 (IC5_inmi)</p>
+          </div>
+          <div class="codebook-item">
             <span class="codebook-item-label">Pendientes de validación</span>
             <p>España 1931–39 · Sudáfrica 1990–94 · Estonia 1991–2000 · China 1978–2020</p>
           </div>
@@ -907,7 +1002,7 @@
     <div class="footer-inner">
       <div>
         <p class="footer-brand">El Triángulo Político</p>
-        <p class="footer-version">Basado en Codebook V3.3</p>
+        <p class="footer-version">Basado en Codebook V4.0</p>
       </div>
       <div class="footer-links">
         <a href="#metodologia">Cómo citar</a>
